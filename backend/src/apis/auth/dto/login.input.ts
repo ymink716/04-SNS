@@ -8,7 +8,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class loginDto {
+export class loginInput {
   @ApiProperty({ description: '이메일', example: 'test@mail.com' })
   @IsEmail()
   @IsNotEmpty()

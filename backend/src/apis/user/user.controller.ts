@@ -6,7 +6,7 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/createUser.dto';
+import { CreateUserInput } from './dto/createUser.input';
 import { UserService } from './user.service';
 import {
   ApiBadRequestResponse,
@@ -49,8 +49,8 @@ export class UserController {
   })
   @ApiResponse({ type: User, description: '회원가입 성공!', status: 201 })
   createUser(
-    @Body(ValidationPipe) createUserDto: CreateUserDto,
+    @Body(ValidationPipe) createUserInput: CreateUserInput,
   ): Promise<User> {
-    return this.userService.signup({ createUserDto });
+    return this.userService.signup({ createUserInput });
   }
 }

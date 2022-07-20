@@ -25,7 +25,7 @@ export class Post {
   @Column('longtext')
   content: string;
 
-  @ApiProperty({ description: '게시글 해시태그' })
+  @ApiProperty({ description: '게시글 해시태그', nullable: true })
   @Column('longtext')
   hashTags: string;
 

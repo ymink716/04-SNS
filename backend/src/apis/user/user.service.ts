@@ -20,8 +20,8 @@ export class UserService {
     });
   }
 
-  async signup({ createUserDto }): Promise<User> {
-    const { email, password, passwordConfirm } = createUserDto;
+  async signup({ createUserInput }): Promise<User> {
+    const { email, password, passwordConfirm } = createUserInput;
     const isExist = await this.fetch({ email });
     if (isExist)
       throw new UnprocessableEntityException('이미 가입된 이메일 입니다');
