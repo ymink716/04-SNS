@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './apis/app/app.controller';
 import { AppService } from './apis/app/app.service';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      envFilePath: ['env/.env'],
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,

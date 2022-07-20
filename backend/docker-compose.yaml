@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+  backend-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./env/.env:/wanted-sns/env/.env
+      - ./src:/wanted-sns/src
+    ports:
+      - 3003:3003
+
+  database-server:
+    # platform: linux/x86_64 # 윈도우 환경에 설치된 도커를 쓰신다면 이부분을 제외해주세요!
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: 'sns'
+      MYSQL_ROOT_PASSWORD: 1178
+      TZ: 'Asia/Seoul'
+    command:
+      [
+        'mysqld',
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci',
+        '--default-time-zone=+09:00',
+      ]
+    ports:
+      - 3306:3306
