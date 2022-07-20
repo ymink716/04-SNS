@@ -4,11 +4,14 @@ import { DocumentationOptions } from './common/config/swagger/documentationOptio
 import { SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filter/httpExceptionFilter';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.setGlobalPrefix('/api/v1');
+  app.use(cookieParser());
+
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

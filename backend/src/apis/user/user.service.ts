@@ -14,9 +14,15 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  async fetch({ email }) {
+    return await this.userRepository.findOne({
+      where: { email },
+    });
+  }
+
   async signup({ createUserDto }): Promise<User> {
     const { email, password, passwordConfirm } = createUserDto;
-    const isExist = await this.userRepository.findOne({ where: { email } });
+    const isExist = await this.fetch({ email });
     if (isExist)
       throw new UnprocessableEntityException('이미 가입된 이메일 입니다');
 

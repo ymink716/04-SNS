@@ -11,7 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateUserDto {
   @IsEmail({ message: '유효하지 않은 이메일 주소입니다' })
   @IsNotEmpty()
-  @ApiProperty({ description: '유저의 이메일 주소', example: 'test@naver.com' })
+  @ApiProperty({ description: '유저의 이메일 주소', example: 'test@mail.com' })
   email: string;
 
   @IsString()
