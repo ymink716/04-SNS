@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:14
 
 WORKDIR /wanted-sns/
 COPY ./package.json /wanted-sns/
