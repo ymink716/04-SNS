@@ -8,7 +8,7 @@ services:
     volumes:
       - ./env/.env:/wanted-sns/env/.env
       - ./src:/wanted-sns/src
-      - ./node_modules:/wanted-sns/node_modules
+      # - ./node_modules:/wanted-sns/node_modules
     environment:
       - TZ=Asia/Seoul
     ports:
