@@ -22,7 +22,6 @@ import { AppService } from './apis/app/app.service';
       logging: true,
       retryAttempts: 30,
       retryDelay: 5000,
-      connectTimeout: 15000,
       timezone: 'Z',
     }),
   ],

@@ -8,6 +8,9 @@ services:
     volumes:
       - ./env/.env:/wanted-sns/env/.env
       - ./src:/wanted-sns/src
+      - ./node_modules:/wanted-sns/node_modules
+    environment:
+      - TZ=Asia/Seoul
     ports:
       - 3003:3003
 
@@ -18,12 +21,12 @@ services:
       MYSQL_DATABASE: 'sns'
       MYSQL_ROOT_PASSWORD: 1178
       TZ: 'Asia/Seoul'
-    command:
-      [
-        'mysqld',
-        '--character-set-server=utf8mb4',
-        '--collation-server=utf8mb4_unicode_ci',
-        '--default-time-zone=+09:00',
-      ]
+    # command:
+    #   [
+    #     'mysqld',
+    #     '--character-set-server=utf8mb4',
+    #     '--collation-server=utf8mb4_unicode_ci',
+    #     '--default-time-zone=+09:00',
+    #   ]
     ports:
       - 3306:3306
