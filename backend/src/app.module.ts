@@ -3,11 +3,13 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './apis/app/app.controller';
 import { AppService } from './apis/app/app.service';
+import { PostModule } from './apis/post/post.module';
 import { UserModule } from './apis/user/user.module';
 
 @Module({
   imports: [
     UserModule,
+    PostModule,
     ConfigModule.forRoot({
       envFilePath: ['env/.env'],
       isGlobal: true,
