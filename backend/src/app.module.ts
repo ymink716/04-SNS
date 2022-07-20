@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './apis/app/app.controller';
-import { AppService } from './apis/app/app.service';
 import { AuthModule } from './apis/auth/auth.module';
 import { PostModule } from './apis/post/post.module';
 import { UserModule } from './apis/user/user.module';
@@ -32,6 +31,5 @@ import { UserModule } from './apis/user/user.module';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

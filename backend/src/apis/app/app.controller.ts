@@ -1,12 +1,14 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Get, Res } from '@nestjs/common';
+import { Response } from 'express';
 
+import { ApiExcludeController, ApiExcludeEndpoint } from '@nestjs/swagger';
+
+@ApiExcludeController()
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
-
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @ApiExcludeEndpoint()
+  sendToSwaggerDocs(@Res() res: Response) {
+    res.redirect(302, 'http://localhost:3003/api/docs');
   }
 }
