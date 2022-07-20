@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { Post } from 'src/apis/post/entities/post.entity';
+import { Feed } from 'src/apis/feed/entities/feed.entity';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 
@@ -35,8 +35,8 @@ export class User {
     description: '유저가 작성한 게시글 목록',
     example: ['Post1', 'Post2', '...'],
   })
-  @OneToMany(() => Post, (posts) => posts.user, { cascade: true })
-  posts: Post[];
+  @OneToMany(() => Feed, (feeds) => feeds.user, { cascade: true })
+  posts: Feed[];
 
   @ApiProperty({ description: '유저 회원정보가 생성된 시각' })
   @CreateDateColumn()

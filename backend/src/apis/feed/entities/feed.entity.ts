@@ -12,21 +12,21 @@ import { ApiProperty } from '@nestjs/swagger';
 import { User } from 'src/apis/user/entities/user.entity';
 
 @Entity()
-export class Post {
+export class Feed {
   @ApiProperty({ description: '게시글의 uuid' })
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('increment')
+  id: number;
 
   @ApiProperty({ description: '게시글 제목' })
   @Column('varchar')
   title: string;
 
   @ApiProperty({ description: '게시글 내용' })
-  @Column('longtext')
+  @Column({ type: 'mediumtext' })
   content: string;
 
   @ApiProperty({ description: '게시글 해시태그', nullable: true })
-  @Column('longtext')
+  @Column({ type: 'mediumtext' })
   hashTags: string;
 
   @ApiProperty({ description: '게시글을 작성한 유저 정보' })

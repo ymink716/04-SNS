@@ -7,13 +7,7 @@ import {
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiBody,
-  ApiInternalServerErrorResponse,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CurrentUser, ICurrentUser } from 'src/common/auth/currentUser';
 import { JwtRefreshGuard } from 'src/common/auth/guard/jwtRefresh.guard';

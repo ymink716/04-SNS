@@ -3,13 +3,13 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './apis/app/app.controller';
 import { AuthModule } from './apis/auth/auth.module';
-import { PostModule } from './apis/post/post.module';
+import { FeedModule } from './apis/feed/feed.module';
 import { UserModule } from './apis/user/user.module';
 
 @Module({
   imports: [
     UserModule,
-    PostModule,
+    FeedModule,
     AuthModule,
     ConfigModule.forRoot({
       envFilePath: ['env/.env'],
