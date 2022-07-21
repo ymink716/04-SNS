@@ -14,6 +14,9 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -22,6 +25,8 @@ import {
 } from '@nestjs/swagger';
 import { CurrentUser, ICurrentUser } from 'src/common/auth/currentUser';
 import { JwtAccessGuard } from 'src/common/auth/guard/jwtAccess.guard';
+import { ErrorType } from 'src/common/error.type';
+import { ResponseType } from 'src/common/response.type';
 
 import { CreateFeedInput } from './dto/createFeed.input';
 import {
@@ -41,49 +46,58 @@ import { FeedService } from './feed.service';
 export class FeedController {
   constructor(private readonly feedService: FeedService) {}
 
-  @Post()
+  // swagger
   @ApiOperation({
     description: '게시글 생성 Api입니다',
     summary: '게시글 생성',
   })
   @ApiBearerAuth('access_token')
+  @ApiBody({ type: CreateFeedInput })
+  @ApiCreatedResponse({
+    type: () => Feed,
+    description: ResponseType.createFeed.msg,
+  })
+  @ApiNotFoundResponse({ description: ErrorType.userNotFound.msg })
+  // swagger
+  @Post()
   @UseGuards(JwtAccessGuard)
   createFeed(
     @CurrentUser() user: ICurrentUser,
     @Body(ValidationPipe) createFeedInput: CreateFeedInput,
-  ) {
+  ): Promise<Feed> {
     return this.feedService.create({ user, createFeedInput });
   }
 
-  @Patch(':feedId')
-  @ApiBearerAuth('access_token')
+  // swagger
   @ApiOperation({
     description: '게시글 수정 Api입니다',
     summary: '게시글 수정',
   })
+  @ApiBearerAuth('access_token')
   @ApiBody({ type: UpdateFeedInput })
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  @ApiOkResponse({ type: () => Feed, description: ResponseType.updateFeed.msg })
+  // swagger
+  @Patch(':feedId')
   @UseGuards(JwtAccessGuard)
   updateFeed(
     @CurrentUser() user: ICurrentUser,
     @Param('feedId') feedId: number,
     @Body(ValidationPipe) updateFeedInput: UpdateFeedInput,
-  ) {
+  ): Promise<Feed> {
     return this.feedService.update({ feedId, user, updateFeedInput });
   }
 
-  @Delete(':feedId')
-  @ApiBearerAuth('access_token')
-  @ApiResponse({
-    type: String,
-    description: '게시글이 성공적으로 삭제되었습니다',
-    status: 200,
-  })
+  //swagger
   @ApiOperation({
     description: '게시글 삭제 Api입니다',
     summary: '게시글 삭제',
   })
+  @ApiBearerAuth('access_token')
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  @ApiOkResponse({ description: ResponseType.deleteFeed.msg })
+  // swagger
+  @Delete(':feedId')
   @UseGuards(JwtAccessGuard)
   async deleteFeed(@Param('feedId') feedId: number) {
     const isDeleted: boolean = await this.feedService.delete({ feedId });
@@ -91,18 +105,16 @@ export class FeedController {
     else return Error('게시글 삭제에 실패하였습니다');
   }
 
-  @Put(':feedId')
-  @ApiBearerAuth('access_token')
-  @ApiResponse({
-    type: String,
-    description: '게시글이 성공적으로 복구되었습니다',
-    status: 200,
-  })
+  //swagger
   @ApiOperation({
     description: '게시글 복구 Api입니다',
     summary: '게시글 복구',
   })
+  @ApiBearerAuth('access_token')
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  @ApiOkResponse({ description: ResponseType.restoreFeed.msg })
+  //swagger
+  @Put(':feedId')
   @UseGuards(JwtAccessGuard)
   async restoreFeed(@Param('feedId') feedId: number) {
     const isRestored = await this.feedService.restore({ feedId });
@@ -110,14 +122,17 @@ export class FeedController {
     else return Error('게시글 복구에 실패하였습니다');
   }
 
-  @Post(':feedId')
-  @ApiBearerAuth('access_token')
+  //swagger
   @ApiOperation({
     description: '게시글 좋아요 Api입니다',
     summary: '게시글 좋아요',
   })
-  @UseGuards(JwtAccessGuard)
+  @ApiBearerAuth('access_token')
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  @ApiOkResponse({ description: ResponseType.likeFeed.msg })
+  // swagger
+  @Post('like/:feedId')
+  @UseGuards(JwtAccessGuard)
   async toggleLike(
     @Param('feedId') feedId: number,
     @CurrentUser() user: ICurrentUser,
@@ -128,26 +143,26 @@ export class FeedController {
     else return '좋아요 취소 성공';
   }
 
-  @Get(':feedId')
-  @ApiResponse({
-    type: () => Feed,
-    status: 200,
-    description: '게시글 상세 조회 성공',
-  })
-  @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  // swagger
   @ApiOperation({
     description: '게시글 상세 조회 Api입니다',
     summary: '게시글 상세 조회',
   })
-  fetchFeed(@Param('feedId') feedId: number) {
+  @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  @ApiOkResponse({
+    type: () => Feed,
+    description: ResponseType.fetchFeed.msg,
+  })
+  // swagger
+  @Get(':feedId')
+  fetchFeed(@Param('feedId') feedId: number): Promise<Feed> {
     return this.feedService.findOne({ feedId });
   }
 
-  @Get()
-  @ApiResponse({
-    type: FetchFeedsOutput,
-    status: 200,
-    description: '게시글 목록 조회 성공',
+  // swagger
+  @ApiOperation({
+    description: '게시글 목록 조회 Api입니다',
+    summary: '게시글 목록 조회',
   })
   @ApiQuery({
     name: 'search',
@@ -187,10 +202,12 @@ export class FeedController {
     example: 10,
     required: false,
   })
-  @ApiOperation({
-    description: '게시글 목록 조회 Api입니다',
-    summary: '게시글 목록 조회',
+  @ApiOkResponse({
+    type: FetchFeedsOutput,
+    description: ResponseType.fetchFeeds.msg,
   })
+  // swagger
+  @Get()
   fetchFeeds(
     @Query('search') search?: string,
     @Query('order') order?: OrderOption,
