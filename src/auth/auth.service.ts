@@ -5,12 +5,15 @@ import { ErrorType } from 'src/utils/error.enum';
 import { Repository } from 'typeorm';
 import { SignUpDto } from './dto/signup.dto';
 import * as bcrypt from 'bcryptjs';
+import { SignInDto } from './dto/signin.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -50,6 +53,22 @@ export class AuthService {
       } else {
         throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
       }
+    }
+  }
+
+  async signIn(signInDto: SignInDto) {
+    const { email, password } = signInDto;
+    const user: User = await this.userRepository.findOne({ where: { email }});
+
+    const checkPassword = await bcrypt.compare(password, user.password);
+
+    if (user && checkPassword) {
+      const payload = { email };
+      const accessToken = await this.jwtService.sign(payload);
+
+      return { accessToken };
+    } else {
+      throw new HttpException(ErrorType.unAuthorized.message, ErrorType.unAuthorized.code);
     }
   }
 }
