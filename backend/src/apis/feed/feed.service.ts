@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FetchFeedQuery } from 'src/apis/feed/handler/fetchFeed.query';
-import { Connection, Repository } from 'typeorm';
+import { Brackets, Connection, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import {
@@ -174,11 +174,13 @@ export class FeedService {
 
     if (filter) {
       hashTags = filter.split(',');
-      hashTags.forEach((element) => {
-        qb.andWhere('feed.hashTags like :hashTags', {
-          hashTags: `%${element}%`,
-        });
-      });
+      qb.andWhere(
+        new Brackets((qb) => {
+          hashTags.forEach((el) => {
+            qb.andWhere(`feed.hashTags like '%${el}%'`);
+          });
+        }),
+      );
     }
 
     if (search) {
