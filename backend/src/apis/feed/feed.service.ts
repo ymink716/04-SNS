@@ -42,4 +42,12 @@ export class FeedService {
     delete result.user.password;
     return result;
   }
+  async delete({ feedId }) {
+    const feed = await this.feedRepository.findOne({ where: { id: feedId } });
+
+    if (!feed) throw new NotFoundException('존재하지 않는 게시글입니다');
+    const result = await this.feedRepository.softDelete({ id: feedId });
+
+    return result.affected ? true : false;
+  }
 }

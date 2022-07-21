@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Param,
   Patch,
   Post,
@@ -36,7 +37,6 @@ export class FeedController {
   })
   @ApiBearerAuth('access_token')
   @UseGuards(JwtAccessGuard)
-  @ApiResponse({ status: 201 })
   createFeed(
     @CurrentUser() user: ICurrentUser,
     @Body(ValidationPipe) createFeedInput: CreateFeedInput,
@@ -46,7 +46,6 @@ export class FeedController {
 
   @Patch(':feedId')
   @ApiBearerAuth('access_token')
-  @ApiResponse({ status: 200 })
   @ApiOperation({
     description: '게시글 수정 Api입니다',
     summary: '게시글 수정',
@@ -60,5 +59,24 @@ export class FeedController {
     @Body(ValidationPipe) updateFeedInput: UpdateFeedInput,
   ) {
     return this.feedService.update({ feedId, user, updateFeedInput });
+  }
+
+  @Delete(':feedId')
+  @ApiBearerAuth('access_token')
+  @ApiResponse({
+    type: String,
+    description: '게시글이 성공적으로 삭제되었습니다',
+    status: 200,
+  })
+  @ApiOperation({
+    description: '게시글 삭제 Api입니다',
+    summary: '게시글 삭제',
+  })
+  @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  @UseGuards(JwtAccessGuard)
+  async deleteFeed(@Param('feedId') feedId: number) {
+    const isDeleted: boolean = await this.feedService.delete({ feedId });
+    if (isDeleted) return '게시글이 성공적으로 삭제되었습니다';
+    else return Error('게시글 삭제에 실패하였습니다');
   }
 }
