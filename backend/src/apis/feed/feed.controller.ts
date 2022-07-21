@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -78,5 +79,24 @@ export class FeedController {
     const isDeleted: boolean = await this.feedService.delete({ feedId });
     if (isDeleted) return '게시글이 성공적으로 삭제되었습니다';
     else return Error('게시글 삭제에 실패하였습니다');
+  }
+
+  @Put(':feedId')
+  @ApiBearerAuth('access_token')
+  @ApiResponse({
+    type: String,
+    description: '게시글이 성공적으로 복구되었습니다',
+    status: 200,
+  })
+  @ApiOperation({
+    description: '게시글 복구 Api입니다',
+    summary: '게시글 복구',
+  })
+  @ApiParam({ name: 'feedId', schema: { example: 1 } })
+  @UseGuards(JwtAccessGuard)
+  async restoreFeed(@Param('feedId') feedId: number) {
+    const isRestored = await this.feedService.restore({ feedId });
+    if (isRestored) return '게시글이 성공적으로 복구되었습니다';
+    else return Error('게시글 복구에 실패하였습니다');
   }
 }

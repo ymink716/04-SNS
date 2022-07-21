@@ -50,4 +50,15 @@ export class FeedService {
 
     return result.affected ? true : false;
   }
+
+  async restore({ feedId }) {
+    const feed = await this.feedRepository.findOne({
+      where: { id: feedId },
+      withDeleted: true,
+    });
+    if (!feed) throw new NotFoundException('존재하지 않는 게시글입니다');
+
+    const result = await this.feedRepository.restore({ id: feedId });
+    return result.affected ? true : false;
+  }
 }
