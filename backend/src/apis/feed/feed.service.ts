@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
+import { FetchFeedQuery } from 'src/apis/feed/handler/fetchFeed.query';
 import { Connection, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
@@ -23,6 +25,7 @@ export class FeedService {
     private readonly feedLikeRepository: Repository<FeedLike>,
     private readonly userService: UserService,
     private readonly connection: Connection,
+    private readonly queryBus: QueryBus,
   ) {}
 
   async create({ user, createFeedInput }): Promise<Feed> {
@@ -157,6 +160,8 @@ export class FeedService {
 
   async findOne({ feedId }): Promise<Feed> {
     const result = await this.feedRepository.findOne({ where: { id: feedId } });
+    const fetchFeedQuery = new FetchFeedQuery(result);
+    this.queryBus.execute(fetchFeedQuery);
     delete result.user.password;
     return result;
   }

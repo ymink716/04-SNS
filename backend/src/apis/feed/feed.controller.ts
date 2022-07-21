@@ -20,13 +20,12 @@ import {
   ApiOperation,
   ApiParam,
   ApiQuery,
-  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { CurrentUser, ICurrentUser } from 'src/common/auth/currentUser';
 import { JwtAccessGuard } from 'src/common/auth/guard/jwtAccess.guard';
-import { ErrorType } from 'src/common/error.type';
-import { ResponseType } from 'src/common/response.type';
+import { ErrorType } from 'src/common/type/error.type';
+import { ResponseType } from 'src/common/type/response.type';
 
 import { CreateFeedInput } from './dto/createFeed.input';
 import {
