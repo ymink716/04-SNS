@@ -7,7 +7,7 @@ import {
   PrimaryColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Feed } from 'src/apis/feed/entities/feed.entity';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
@@ -22,19 +22,14 @@ export class User {
   @PrimaryColumn({ type: 'varchar', unique: true })
   email: string;
 
-  @ApiProperty({
-    description: '유저의 비밀번호',
-    writeOnly: true,
-    maxLength: 20,
-    minLength: 6,
-  })
   @Column()
   password: string;
 
-  @ApiProperty({
-    description: '유저가 작성한 게시글 목록',
-    example: ['Post1', 'Post2', '...'],
-  })
+  // @ApiPropertyOptional({
+  //   type: () => [Feed],
+  //   description: '유저가 작성한 게시글 목록',
+  //   example: ['Post1', 'Post2', '...'],
+  // })
   @OneToMany(() => Feed, (feeds) => feeds.user, { cascade: true })
   posts: Feed[];
 

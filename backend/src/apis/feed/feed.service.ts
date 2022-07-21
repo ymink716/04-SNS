@@ -1,16 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Connection, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
+import {
+  FetchFeedOptions,
+  OrderByOption,
+  OrderOption,
+} from './dto/fetchFeed.options';
+import { FetchFeedsOutput } from './dto/fetchFeed.output';
 import { Feed } from './entities/feed.entity';
+import { FeedLike } from './entities/feedLike.entity';
 
 @Injectable()
 export class FeedService {
   constructor(
     @InjectRepository(Feed)
     private readonly feedRepository: Repository<Feed>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(FeedLike)
+    private readonly feedLikeRepository: Repository<FeedLike>,
     private readonly userService: UserService,
+    private readonly connection: Connection,
   ) {}
 
   async create({ user, createFeedInput }): Promise<Feed> {
@@ -60,5 +72,142 @@ export class FeedService {
 
     const result = await this.feedRepository.restore({ id: feedId });
     return result.affected ? true : false;
+  }
+
+  async like({ user, feedId }) {
+    const queryRunner = this.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('READ COMMITTED');
+    try {
+      const feedLike = await queryRunner.manager.findOne(
+        FeedLike, //
+        { where: { feed: feedId } },
+      );
+
+      const userInfo = await this.userRepository.findOne({
+        where: { email: user.email },
+      });
+
+      const feed = await queryRunner.manager.findOne(Feed, {
+        where: { id: feedId },
+      });
+
+      if (!feed || !userInfo) throw new NotFoundException();
+
+      if (!feedLike) {
+        const updateLike = this.feedLikeRepository.create({
+          user,
+          feed,
+          isLike: true,
+        });
+        await queryRunner.manager.save(updateLike);
+
+        const updateFeed = this.feedRepository.create({
+          ...feed,
+          likeCount: feed.likeCount + 1,
+        });
+        await queryRunner.manager.save(updateFeed);
+        await queryRunner.commitTransaction();
+
+        return true;
+      } else {
+        if (feedLike.isLike) {
+          const updateLike = this.feedLikeRepository.create({
+            ...feedLike,
+            user,
+            feed,
+            isLike: false,
+          });
+          await queryRunner.manager.save(updateLike);
+
+          const updateFeed = this.feedRepository.create({
+            ...feed,
+            likeCount: feed.likeCount - 1,
+          });
+          await queryRunner.manager.save(updateFeed);
+          await queryRunner.commitTransaction();
+
+          return false;
+        } else {
+          const updateLike = this.feedLikeRepository.create({
+            ...feedLike,
+            user,
+            feed,
+            isLike: true,
+          });
+          await queryRunner.manager.save(updateLike);
+
+          const updateFeed = this.feedRepository.create({
+            ...feed,
+            likeCount: feed.likeCount + 1,
+          });
+          await queryRunner.manager.save(updateFeed);
+          await queryRunner.commitTransaction();
+
+          return true;
+        }
+      }
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async findOne({ feedId }): Promise<Feed> {
+    const result = await this.feedRepository.findOne({ where: { id: feedId } });
+    delete result.user.password;
+    return result;
+  }
+
+  async findList({ ...fetchFeedOptions }: FetchFeedOptions) {
+    let { order, orderBy, page, pageCount } = fetchFeedOptions;
+    const { filter, search } = fetchFeedOptions;
+    const qb = this.feedRepository.createQueryBuilder('feed');
+    let hashTags;
+
+    if (filter) {
+      hashTags = filter.split(',');
+      hashTags.forEach((element) => {
+        qb.andWhere('feed.hashTags like :hashTags', {
+          hashTags: `%${element}%`,
+        });
+      });
+    }
+
+    if (search) {
+      qb.andWhere('feed.content like :content', {
+        content: `%${search}%`,
+      }).orWhere('feed.title like :title', { title: `%${search}%` });
+    }
+
+    if (order && orderBy) {
+      qb.orderBy(`feed.${order}`, orderBy);
+    } else {
+      order = OrderOption.CREATEDAT;
+      orderBy = OrderByOption.ASC;
+      qb.orderBy(`feed.${order}`, orderBy); // default
+    }
+
+    if (page && pageCount) {
+      qb.take(pageCount).skip((page - 1) * pageCount);
+    } else {
+      page = 1;
+      pageCount = 10;
+      qb.take(pageCount).skip((page - 1) * pageCount);
+    }
+
+    const result = await qb.getManyAndCount();
+    const [feeds, total] = result;
+    const output: FetchFeedsOutput = {
+      feeds,
+      page,
+      pageCount,
+      total,
+      search,
+      filter: hashTags,
+    };
+    return output;
   }
 }

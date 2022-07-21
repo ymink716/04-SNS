@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 import { User } from 'src/apis/user/entities/user.entity';
 
@@ -29,7 +29,18 @@ export class Feed {
   @Column({ type: 'mediumtext' })
   hashTags: string;
 
-  @ApiProperty({ description: '게시글을 작성한 유저 정보' })
+  @ApiProperty({ description: '게시글 조회수' })
+  @Column({ default: 0 })
+  watchCount: number;
+
+  @ApiProperty({ description: '게시글 좋아요수' })
+  @Column({ default: 0 })
+  likeCount: number;
+
+  @ApiPropertyOptional({
+    type: () => User,
+    description: '게시글을 작성한 유저 정보',
+  })
   @ManyToOne(() => User, { onDelete: 'CASCADE', eager: true })
   user: User;
 
