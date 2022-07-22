@@ -1,3 +1,4 @@
+import { Post } from 'src/post/entity/post.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
@@ -45,4 +46,8 @@ export class User {
   @Column({ nullable: true })
   @Exclude({ toPlainOnly: true })
   hashedRefreshToken?: string;
+
+  // 사용자 : 게시물 -> 1:n
+  @OneToMany(type => Post, post => post.user)
+  posts: Post[];
 }

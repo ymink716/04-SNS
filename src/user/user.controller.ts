@@ -4,7 +4,7 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { ErrorType } from 'src/utils/error.enum';
 import { GetUser } from 'src/utils/get-user.decorator';
 import { ResponseType } from 'src/utils/response.enum';
-import { User } from './entities/user.entity';
+import { User } from './entity/user.entity';
 import { UserService } from './user.service';
 
 @ApiTags('users')
@@ -18,7 +18,6 @@ export class UserController {
   @ApiOperation({ description: '유저 정보를 가져옵니다.', summary: '유저 정보' })
   @Get()
   async getUser(@GetUser() user: User) {
-    console.log('dd');
     return user;
   }
 }

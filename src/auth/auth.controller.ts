@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { User } from 'src/user/entities/user.entity';
+import { User } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
 import { GetUser } from 'src/utils/get-user.decorator';
 import { ResponseType } from 'src/utils/response.enum';
@@ -23,9 +23,9 @@ export class AuthController {
   /**
    * @description 사용자를 생성하여 회원가입을 처리
   */
-  @Post('/user/register')
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ description: ResponseType.createUser.message })
+  @Post('/user/register')
   async register(@Body() createUserDto: CreateUserDto) {
     const user = await this.authService.register(createUserDto);
 
