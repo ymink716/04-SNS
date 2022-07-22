@@ -184,9 +184,13 @@ export class FeedService {
     }
 
     if (search) {
-      qb.andWhere('feed.content like :content', {
-        content: `%${search}%`,
-      }).orWhere('feed.title like :title', { title: `%${search}%` });
+      qb.andWhere(
+        new Brackets((qb) => {
+          qb.andWhere('feed.title like :title', {
+            title: `%${search}%`,
+          }).orWhere('feed.content like :content', { content: `%${search}%` });
+        }),
+      );
     }
 
     if (order && orderBy) {
@@ -202,7 +206,7 @@ export class FeedService {
     } else {
       page = 1;
       pageCount = 10;
-      qb.take(pageCount).skip((page - 1) * pageCount);
+      qb.take(pageCount).skip((page - 1) * pageCount); // default
     }
 
     const result = await qb.getManyAndCount();
