@@ -1,74 +1,102 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import { ErrorType } from 'src/utils/error.enum';
-import { Repository } from 'typeorm';
-import { SignUpDto } from './dto/signup.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcryptjs';
-import { SignInDto } from './dto/signin.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserService } from 'src/user/user.service';
+import { defaultTokenOption } from './token-option.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
 
   /**
-   * @description 새로운 사용자를 생성합니다.
+   * @description 새로운 사용자를 생성하고 반환합니다.
   */
-  async signUp(signUpDto: SignUpDto): Promise<User> {
-    const { email, password, nickname, confirmPassword } = signUpDto;
-
-    const checkPassword = password !== confirmPassword;
-    if(!checkPassword) {
-      throw new HttpException(
-        ErrorType.confirmPasswordDoesNotMatch.message, 
-        ErrorType.confirmPasswordDoesNotMatch.code
-      );
-    }
+  async register(createUserDto: CreateUserDto): Promise<User> {
+    const { email, password, nickname } = createUserDto;
 
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const user: User = this.userRepository.create({
-      email,
-      nickname,
-      password: hashedPassword,
-    });
+    const user: User = await this.userService.createUser(email, nickname, hashedPassword);
 
-    try {
-      await this.userRepository.save(user);
-  
-      return user;
-    } catch ({ errno, sqlMessage }) {
-      if (errno === 1062) {
-        if (sqlMessage.includes(email)) {
-          throw new HttpException(ErrorType.emailExist.message, ErrorType.emailExist.code);
-        } else if (sqlMessage.includes(nickname)) {
-          throw new HttpException(ErrorType.emailExist.message, ErrorType.nicknameExist.code);
-        }
-      } else {
-        throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
-      }
-    }
+    return user;
   }
 
-  async signIn(signInDto: SignInDto) {
-    const { email, password } = signInDto;
-    const user: User = await this.userRepository.findOne({ where: { email }});
+  /**
+   * @description 사용자가 존재하는지 비밀번호가 맞는지 확인합니다.
+  */
+  async validateUser(payload: LoginUserDto): Promise<User> {
+    const { password, email } = payload;
 
-    const checkPassword = await bcrypt.compare(password, user.password);
-
-    if (user && checkPassword) {
-      const payload = { email };
-      const accessToken = await this.jwtService.sign(payload);
-
-      return { accessToken };
-    } else {
-      throw new HttpException(ErrorType.unAuthorized.message, ErrorType.unAuthorized.code);
+    const user: User = await this.userService.getUserByEmail(email);
+    
+    const isPasswordMatched = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatched) {
+      throw new HttpException(ErrorType.passwordDoesNotMatch.message, ErrorType.passwordDoesNotMatch.code);
     }
+
+    return user;
+  }
+
+  /**
+   * @description 사용자가 존재하는지 비밀번호가 맞는지 확인합니다.
+  */
+  async getTokens(email: string) {
+    const { accessToken, accessOption } = await this.getCookieWithAccessToken(email);
+    const { refreshToken, refreshOption } = await this.getCookieWithRefreshToken(email);
+  
+    return { accessToken, accessOption, refreshToken, refreshOption };
+  }
+
+  /**
+   * @description access token을 발급 받고, 쿠키 정보에 넣어 보내줍니다.
+  */
+   async getCookieWithAccessToken(email: string) {
+    const payload = await this.userService.getUserByEmail(email);
+    delete payload.password;
+
+    const accessToken = await this.jwtService.sign(
+      { ...payload },
+      {
+        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
+      },
+    );
+
+    const accessOption = defaultTokenOption;
+
+    return { accessToken, accessOption, ...payload };
+  }
+
+  /**
+   * @description refresh token을 발급 받고, 쿠키 정보에 넣어 보내줍니다.
+  */
+  async getCookieWithRefreshToken(email: string) {
+    const payload = { email };
+
+    const refreshToken = await this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
+    });
+
+    const refreshOption = defaultTokenOption;
+    return { refreshToken, refreshOption };
+  }
+
+  /**
+   * @description 로그아웃 시 쿠키 옵션들을 반환합니다.
+  */
+  getCookiesForLogOut() {
+    const accessOption = { ...defaultTokenOption, maxAge: 0 };
+    const refreshOption = { ...defaultTokenOption, maxAge: 0 };
+    
+    return { accessOption, refreshOption };
   }
 }

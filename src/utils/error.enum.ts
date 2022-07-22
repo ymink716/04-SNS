@@ -1,7 +1,7 @@
 export const ErrorType = {
   // Auth
-  unAuthorized: { code: 401, message: '로그인 후 이용해주세요' },
-  confirmPasswordDoesNotMatch: { code: 400, message: '비밀번호와 비밀번호 확인이 일치하지 않습니다!' },
+  unauthorized: { code: 401, message: '인증되지 않은 사용자입니다.' },
+  passwordDoesNotMatch: { code: 400, message: '비밀번호가 일치하지 않습니다!' },
 
   // User
   invalideUser: { code: 400, message: '유효한 사용자가 아닙니다!' },

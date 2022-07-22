@@ -42,8 +42,7 @@ export class User {
   })
   updatedAt: Date;
 
-//   @ApiProperty()
-//   @Column({ nullable: true })
-//   @Exclude({ toPlainOnly: true })
-//   hashedRefreshToken!: 'string';
+  @Column({ nullable: true })
+  @Exclude({ toPlainOnly: true })
+  hashedRefreshToken?: string;
 }

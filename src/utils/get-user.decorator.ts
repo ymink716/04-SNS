@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { User } from 'src/user/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 /**
   * @description custom getUser decorator 작성
