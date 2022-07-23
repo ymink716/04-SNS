@@ -56,16 +56,47 @@ export class PostService {
     }
   }
 
-  async deletePost(postId: number) {
+  async deletePost(postId: number, user: User) {
+    const post: Post = await this.getPostById(postId);
     
+    if (user.id !== post.user.id) {
+      throw new HttpException(ErrorType.postForbidden.message, ErrorType.postForbidden.code);
+    }
+
+    await this.postRepository.softDelete({ id: postId });
+  }
+
+  async restorePost(postId: number, user: User) {
+    const post: Post = await this.postRepository
+      .createQueryBuilder('post')
+      .withDeleted()
+      .innerJoinAndSelect('post.user', 'user')
+      .where('user.id = :userId', { userId: user.id })
+      .andWhere('post.id = :postId', { postId })
+      .getOne();
+    
+    if (!post) {
+      throw new HttpException(ErrorType.postNotFound.message, ErrorType.postNotFound.code);
+    }
+    if (post.deletedAt === null) {
+      throw new HttpException(ErrorType.postNotDeleted.message, ErrorType.postNotDeleted.code);
+    }
+
+    try {
+      post.deletedAt = null;
+      await this.postRepository.save(post);
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
+    }
   }
 
   async getPostById(id: number) {
-    const post = await this.postRepository.findOne({ 
+    const post: Post = await this.postRepository.findOne({ 
       where: { id }, 
       relations: ['user'] 
     });
-    console.log(typeof id, post);
+    
     if (!post) {
       throw new HttpException(ErrorType.postNotFound.message, ErrorType.postNotFound.code);
     }

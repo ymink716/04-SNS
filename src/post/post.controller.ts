@@ -39,7 +39,8 @@ export class PostController {
   async updatePost(
     @Body() updatePostDto: UpdatePostDto, 
     @GetUser() user: User,
-    @Param('postId', ParseIntPipe) postId: number,) {
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
     const { hashtags } = updatePostDto;
     
     const hashtagList = await this.hashtagService.createHashtagList(hashtags);
@@ -51,14 +52,24 @@ export class PostController {
     return post;
   }
 
+  @ApiBearerAuth('access_token')
+  @UseGuards(JwtAuthGuard)
   @Delete('/:postId')
-  async deletePost(@Param('postId', ParseIntPipe) postId: number) {
-    await this.postService.deletePost(postId);
+  async deletePost(
+    @Param('postId', ParseIntPipe) postId: number,
+    @GetUser() user: User,
+  ) {
+    await this.postService.deletePost(postId, user);
   }
 
+  @ApiBearerAuth('access_token')
+  @UseGuards(JwtAuthGuard)
   @Put('/restore/:postId')
-  async restorePost() {
-    return
+  async restorePost(
+    @Param('postId', ParseIntPipe) postId: number,
+    @GetUser() user: User,
+  ) {
+    await this.postService.restorePost(postId, user);
   }
 
   @Get('/:id')
