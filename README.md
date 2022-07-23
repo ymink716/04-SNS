@@ -14,6 +14,7 @@
     - [**📋 Feed**](#-feed)
     - [**📋 Auth**](#-auth)
   - [🌕 프로젝트 실행 및 테스트](#-프로젝트-실행-및-테스트)
+  - [🔒 ENV](#-env)
 
 <br />
 
@@ -50,6 +51,13 @@
 <img alt= "icon" wide="65" height="65" src ="https://techstack-generator.vercel.app/docker-icon.svg">
 &nbsp&nbsp
 <img alt= "icon" wide="60" height="60" src ="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png">
+</p>
+
+<p align="center">
+🏖&nbsp&nbsp&nbsp 배포
+  </p>
+<p align="center">
+<img alt= "icon" wide="60" height="60" src ="https://camo.githubusercontent.com/79864e687ef243c4008d8c7c9ecc7b77548625b867ce08094beee7a417d41585/68747470733a2f2f6c6972702e63646e2d776562736974652e636f6d2f61613065663336392f646d73337265702f6d756c74692f6f70742f676f6f676c652d636c6f75642d69636f6e2d353730772e706e67">
 </p>
 
 ---
@@ -198,30 +206,51 @@
 
 ## 🌕 프로젝트 실행 및 테스트
 
-**1. 실행 방법** 💡
+**local에서 테스트** 💡
 
-- local 실행시 명령어
+- 실행 명령어
 
 ```
 git clone https://github.com/pre-onboarding-backend-E/04-SNS
 git checkout taeyoung
 cd backend
+env/.env 추가
 docker compose build
 docker compose up
 ```
 
-**2. API 테스트 방법** 💡
+- RestApi로 테스트하기
 
-- local
+  - [Api 항목](#-api-항목)을 참고하여 Rest-Api 호출
+
+- Swagger Docs에서 테스트하기
   - http://localhost:3003/api/docs
-  <!-- - deployed server
-  - http://3.39.69.233/api/hello - 배포 서버 링크 -->
 
-**3. Swagger 테스트 방법** 💡
+**배포 서버에서 테스트** 💡
 
-- local
-  - http://localhost:3003/api/docs 접속
-  <!-- - deployed server
-  - http://3.39.69.233/api/docs 접속 - 배포 서버 링크 ( 스웨거 ) -->
+- RestApi로 테스트하기
 
- <!-- **4. TDD** 💡 -->
+  - localhost => 34.64.153.50:3003
+  - [Api 항목](#-api-항목)을 참고하여 Rest-Api 호출
+
+- Swagger Docs에서 테스트하기
+  - http://34.64.153.50:3003/api/docs
+
+<br>
+
+## 🔒 ENV
+
+- 위치 : /env/.env
+- local에서 실행시 샘플로 사용할 env는 다음과 같습니다
+
+```
+DB_HOST=database-server
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=1178
+DB_DATABASE=sns
+JWT_ACCESS_KEY=AK
+JWT_REFRESH_KEY=RK
+JWT_ACCESS_EXPIRATION_TIME=5h
+JWT_REFRESH_EXPIRATION_TIME=10h
+```
