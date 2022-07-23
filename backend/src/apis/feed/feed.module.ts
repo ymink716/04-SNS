@@ -7,7 +7,7 @@ import { Feed } from './entities/feed.entity';
 import { FeedLike } from './entities/feedLike.entity';
 import { FeedController } from './feed.controller';
 import { FeedService } from './feed.service';
-import { FetchFeedQueryHandler } from './handler/fetchFeedQuery.handler';
+import { FetchFeedQueryHandler } from './handler/fetchFeed.handler';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Feed, FeedLike, User]), CqrsModule],

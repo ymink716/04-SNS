@@ -3,11 +3,13 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
   Put,
   Query,
+  UnprocessableEntityException,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -15,12 +17,16 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiNotAcceptableResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
+  ApiResponse,
   ApiTags,
+  ApiUnauthorizedResponse,
+  ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
 import { CurrentUser, ICurrentUser } from 'src/common/auth/currentUser';
 import { JwtAccessGuard } from 'src/common/auth/guard/jwtAccess.guard';
@@ -45,7 +51,15 @@ import { FeedService } from './feed.service';
 export class FeedController {
   constructor(private readonly feedService: FeedService) {}
 
-  // swagger
+  /**
+   * @summary 게시글 생성 api
+   * @param currentUser
+   * @param createFeedInput
+   * @returns `Feed`
+   */
+  @Post()
+  @UseGuards(JwtAccessGuard)
+  // 스웨거 데코레이터
   @ApiOperation({
     description: '게시글 생성 Api입니다',
     summary: '게시글 생성',
@@ -54,95 +68,138 @@ export class FeedController {
   @ApiBody({ type: CreateFeedInput })
   @ApiCreatedResponse({
     type: () => Feed,
-    description: ResponseType.createFeed.msg,
+    description: ResponseType.feed.create.msg,
   })
-  @ApiNotFoundResponse({ description: ErrorType.userNotFound.msg })
-  // swagger
-  @Post()
-  @UseGuards(JwtAccessGuard)
+  @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
   createFeed(
-    @CurrentUser() user: ICurrentUser,
+    @CurrentUser() currentUser: ICurrentUser,
     @Body(ValidationPipe) createFeedInput: CreateFeedInput,
   ): Promise<Feed> {
-    return this.feedService.create({ user, createFeedInput });
+    return this.feedService.create({ currentUser, createFeedInput });
   }
 
-  // swagger
+  /**
+   * @summary 게시글 수정 api
+   * @param currentUser
+   * @param feedId
+   * @param updateFeedInput
+   * @returns `Feed`
+   */
+  @Patch(':feedId')
+  @UseGuards(JwtAccessGuard)
   @ApiOperation({
     description: '게시글 수정 Api입니다',
     summary: '게시글 수정',
   })
+  // 스웨거 데코레이터
   @ApiBearerAuth('access_token')
   @ApiBody({ type: UpdateFeedInput })
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
-  @ApiOkResponse({ type: () => Feed, description: ResponseType.updateFeed.msg })
-  // swagger
-  @Patch(':feedId')
-  @UseGuards(JwtAccessGuard)
+  @ApiOkResponse({
+    type: () => Feed,
+    description: ResponseType.feed.update.msg,
+  })
+  @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
+  @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
   updateFeed(
-    @CurrentUser() user: ICurrentUser,
+    @CurrentUser() currentUser: ICurrentUser,
     @Param('feedId') feedId: number,
     @Body(ValidationPipe) updateFeedInput: UpdateFeedInput,
   ): Promise<Feed> {
-    return this.feedService.update({ feedId, user, updateFeedInput });
+    return this.feedService.update({ feedId, currentUser, updateFeedInput });
   }
 
-  //swagger
+  /**
+   * @summary 게시글 삭제 api
+   * @param feedId
+   * @returns string
+   */
+  @Delete(':feedId')
+  @UseGuards(JwtAccessGuard)
+  // 스웨거 데코레이터
   @ApiOperation({
     description: '게시글 삭제 Api입니다',
     summary: '게시글 삭제',
   })
   @ApiBearerAuth('access_token')
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
-  @ApiOkResponse({ description: ResponseType.deleteFeed.msg })
-  // swagger
-  @Delete(':feedId')
-  @UseGuards(JwtAccessGuard)
-  async deleteFeed(@Param('feedId') feedId: number) {
+  @ApiOkResponse({ description: ResponseType.feed.delete.msg })
+  @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
+  @ApiUnprocessableEntityResponse({ description: ErrorType.feed.delete.msg })
+  @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
+  async deleteFeed(@Param('feedId') feedId: number): Promise<string> {
     const isDeleted: boolean = await this.feedService.delete({ feedId });
-    if (isDeleted) return '게시글이 성공적으로 삭제되었습니다';
-    else return Error('게시글 삭제에 실패하였습니다');
+    if (isDeleted) return ResponseType.feed.delete.msg;
+    else throw new UnprocessableEntityException(ErrorType.feed.delete.msg);
   }
 
-  //swagger
+  /**
+   * @summary 게시글 복구 api
+   * @param feedId
+   * @returns string
+   */
+  @Put(':feedId')
+  @UseGuards(JwtAccessGuard)
+  // 스웨거 데코레이터
   @ApiOperation({
     description: '게시글 복구 Api입니다',
     summary: '게시글 복구',
   })
   @ApiBearerAuth('access_token')
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
-  @ApiOkResponse({ description: ResponseType.restoreFeed.msg })
-  //swagger
-  @Put(':feedId')
-  @UseGuards(JwtAccessGuard)
+  @ApiOkResponse({
+    description: ResponseType.feed.restore.msg,
+  })
+  @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
+  @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
   async restoreFeed(@Param('feedId') feedId: number) {
     const isRestored = await this.feedService.restore({ feedId });
-    if (isRestored) return '게시글이 성공적으로 복구되었습니다';
-    else return Error('게시글 복구에 실패하였습니다');
+    if (isRestored) return ResponseType.feed.restore.msg;
+    else throw new NotFoundException(ErrorType.feed.restore.msg);
   }
 
-  //swagger
+  /**
+   * @summary 게시글 좋아요 Api
+   * @param feedId
+   * @param currentUser
+   * @returns string
+   */
+  @Post('like/:feedId')
+  @UseGuards(JwtAccessGuard)
+  // 스웨거 데코레이터
   @ApiOperation({
     description: '게시글 좋아요 Api입니다',
     summary: '게시글 좋아요',
   })
   @ApiBearerAuth('access_token')
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
-  @ApiOkResponse({ description: ResponseType.likeFeed.msg })
-  // swagger
-  @Post('like/:feedId')
-  @UseGuards(JwtAccessGuard)
+  @ApiResponse({
+    status: ResponseType.feed.like.code,
+    description: ResponseType.feed.like.msg,
+  })
+  @ApiResponse({
+    status: ResponseType.feed.cancelLike.code,
+    description: ResponseType.feed.cancelLike.msg,
+  })
+  @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
+  @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
+  @ApiNotAcceptableResponse({ description: ErrorType.feed.failLike.msg })
   async toggleLike(
     @Param('feedId') feedId: number,
-    @CurrentUser() user: ICurrentUser,
+    @CurrentUser() currentUser: ICurrentUser,
   ) {
-    const isLike = await this.feedService.like({ user, feedId });
-    console.log(isLike);
-    if (isLike) return '좋아요 성공';
-    else return '좋아요 취소 성공';
+    const isLike = await this.feedService.like({ currentUser, feedId });
+    if (isLike) return ResponseType.feed.like.msg;
+    else return ResponseType.feed.cancelLike.msg;
   }
 
-  // swagger
+  /**
+   * @summary 게시글 상세 조회 Api
+   * @param feedId
+   * @returns `Feed`
+   */
+  @Get(':feedId')
+  // 스웨거 데코레이터
   @ApiOperation({
     description: '게시글 상세 조회 Api입니다',
     summary: '게시글 상세 조회',
@@ -150,15 +207,25 @@ export class FeedController {
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
   @ApiOkResponse({
     type: () => Feed,
-    description: ResponseType.fetchFeed.msg,
+    description: ResponseType.feed.fetch.msg,
   })
-  // swagger
-  @Get(':feedId')
+  @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
   fetchFeed(@Param('feedId') feedId: number): Promise<Feed> {
     return this.feedService.findOne({ feedId });
   }
 
-  // swagger
+  /**
+   * @summary 게시글 목록 조회 Api
+   * @param search
+   * @param order
+   * @param orderBy
+   * @param filter
+   * @param page
+   * @param pageCount
+   * @returns `Feed[]`
+   */
+  @Get()
+  // 스웨거 데코레이터
   @ApiOperation({
     description: '게시글 목록 조회 Api입니다',
     summary: '게시글 목록 조회',
@@ -203,10 +270,8 @@ export class FeedController {
   })
   @ApiOkResponse({
     type: FetchFeedsOutput,
-    description: ResponseType.fetchFeeds.msg,
+    description: ResponseType.feed.fetchs.msg,
   })
-  // swagger
-  @Get()
   fetchFeeds(
     @Query('search') search?: string,
     @Query('order') order?: OrderOption,
