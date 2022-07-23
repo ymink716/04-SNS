@@ -11,6 +11,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Feed } from 'src/apis/feed/entities/feed.entity';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
+import { ErrorType } from 'src/common/type/error.type';
 
 @Entity()
 export class User {
@@ -36,13 +37,14 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  // 생성(create) 전에 비밀번호 해싱
   @BeforeInsert()
   async hashPassword() {
     try {
       this.password = await bcrypt.hash(this.password, 10);
     } catch (e) {
       console.log(e);
-      throw new InternalServerErrorException('비밀번호 해싱 에러');
+      throw new InternalServerErrorException(ErrorType.user.hashing.msg);
     }
   }
 }

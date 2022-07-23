@@ -1,18 +1,18 @@
 export interface FetchFeedOptions {
   search?: string;
   order?: OrderOption;
-  orderBy?: OrderByOption;
+  sort?: SortOption;
   filter?: string;
   page?: number;
   pageCount?: number;
 }
 
-export enum OrderByOption {
+export enum OrderOption {
   DESC = 'DESC',
   ASC = 'ASC',
 }
 
-export enum OrderOption {
+export enum SortOption {
   CREATEDAT = 'createdAt',
   WATCHCOUNT = 'watchCount',
   LIKECOUNT = 'likeCount',

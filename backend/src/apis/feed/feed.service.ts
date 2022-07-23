@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   Injectable,
   NotAcceptableException,
   NotFoundException,
@@ -12,8 +13,8 @@ import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import {
   FetchFeedOptions,
-  OrderByOption,
   OrderOption,
+  SortOption,
 } from './dto/fetchFeed.options';
 import { FetchFeedsOutput } from './dto/fetchFeed.output';
 import { Feed } from './entities/feed.entity';
@@ -52,10 +53,14 @@ export class FeedService {
       email: currentUser.email,
     });
 
-    const feed = await this.feedRepository.findOne({ where: { id: feedId } });
+    const feed: Feed = await this.feedRepository.findOne({
+      where: { id: feedId },
+    });
 
     if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
 
+    if (feed.user.email !== user.email)
+      throw new ForbiddenException(ErrorType.feed.notYours.msg);
     const result = await this.feedRepository.save({
       ...feed,
       user,
@@ -66,23 +71,28 @@ export class FeedService {
     return result;
   }
 
-  async delete({ feedId }): Promise<boolean> {
+  async delete({ currentUser, feedId }): Promise<boolean> {
     const feed = await this.feedRepository.findOne({ where: { id: feedId } });
 
     if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
+
+    if (feed.user.email !== currentUser.email)
+      throw new ForbiddenException(ErrorType.feed.notYours.msg);
 
     const result = await this.feedRepository.softDelete({ id: feedId });
 
     return result.affected ? true : false;
   }
 
-  async restore({ feedId }): Promise<boolean> {
+  async restore({ currentUser, feedId }): Promise<boolean> {
     const feed = await this.feedRepository.findOne({
       where: { id: feedId },
       withDeleted: true,
     });
 
     if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
+    if (feed.user.email !== currentUser.email)
+      throw new ForbiddenException(ErrorType.feed.notYours.msg);
 
     const result = await this.feedRepository.restore({ id: feedId });
 
@@ -116,7 +126,7 @@ export class FeedService {
       let updateFeed: Feed;
       let likeStatus: boolean = null;
 
-      if (!feedLike.isLike || !feedLike) {
+      if (!feedLike?.isLike || !feedLike) {
         // case 1.좋아요를 누르지 않은 상태
         // case 2.좋아요 관계가 형성되어있지 않은 상태
         // 좋아요 상태를 true로 변경하고 피드의 좋아요 수를 증가시킵니다
@@ -133,7 +143,7 @@ export class FeedService {
         });
 
         likeStatus = true;
-      } else if (feedLike.isLike) {
+      } else if (feedLike?.isLike) {
         // case 3. 이미 좋아요를 누른 상태
         // 좋아요 취소로 간주합니다
         // 좋아요 상태를 false로 변경하고 피드의 좋아요 수를 감소시킵니다
@@ -151,6 +161,7 @@ export class FeedService {
 
         likeStatus = false;
       }
+
       if (likeStatus === null)
         throw new NotAcceptableException(ErrorType.feed.failLike.msg);
 
@@ -170,7 +181,7 @@ export class FeedService {
   async findOne({ feedId }): Promise<Feed> {
     const feed = await this.feedRepository
       .createQueryBuilder('feed')
-      .where('feed.id', { feedId })
+      .where('feed.id = :id', { id: feedId })
       .leftJoin('feed.user', 'user')
       .addSelect('user.email')
       .getOne();
@@ -179,6 +190,7 @@ export class FeedService {
 
     const fetchFeedQuery = new FetchFeedQuery(feed);
     this.queryBus.execute(fetchFeedQuery);
+    // 기존 로직과 별개로 쿼리버스를 통해 조회수가 증가합니다
 
     delete feed.user.password;
     return feed;
@@ -187,7 +199,7 @@ export class FeedService {
   async findList({
     ...fetchFeedOptions
   }: FetchFeedOptions): Promise<FetchFeedsOutput> {
-    let { order, orderBy, page, pageCount } = fetchFeedOptions;
+    let { sort, order, page, pageCount } = fetchFeedOptions;
     const { filter, search } = fetchFeedOptions;
     const qb = this.feedRepository
       .createQueryBuilder('feed')
@@ -195,8 +207,8 @@ export class FeedService {
       .addSelect('user.email');
 
     // default 값 설정
-    order = order || OrderOption.CREATEDAT;
-    orderBy = orderBy || OrderByOption.DESC;
+    sort = sort || SortOption.CREATEDAT;
+    order = order || OrderOption.DESC;
     page = page || 1;
     pageCount = pageCount || 10;
 
@@ -206,6 +218,7 @@ export class FeedService {
       hashTags = filter.split(',').map((el) => {
         return '#' + el;
       });
+      // 문자열로 들어온 검색어를 [ '#해시태그1', '#해시태그2' ]와 같이 배열형태로 변경한 후 andWhere like 문을 검색어 개수만큼 실행합니다
       qb.andWhere(
         new Brackets((qb) => {
           hashTags.forEach((el) => {
@@ -218,15 +231,14 @@ export class FeedService {
     if (search) {
       qb.andWhere(
         new Brackets((qb) => {
-          qb.orWhere('feed.title like :title', {
-            title: `%${search}%`,
-          }).orWhere('feed.content like :content', { content: `%${search}%` });
+          qb.orWhere(`feed.title like '%${search}%'`);
+          qb.orWhere(`feed.content like '%${search}%'`);
         }),
       );
     }
 
     const result = await qb
-      .orderBy(`feed.${order}`, orderBy)
+      .orderBy(`feed.${sort}`, order)
       .take(pageCount)
       .skip((page - 1) * pageCount)
       .getManyAndCount();
@@ -238,8 +250,8 @@ export class FeedService {
       pageCount,
       total,
       search,
+      sort,
       order,
-      orderBy,
       filter: hashTags || null,
     };
     return output;

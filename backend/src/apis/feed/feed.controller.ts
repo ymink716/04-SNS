@@ -17,13 +17,13 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
+  ApiForbiddenResponse,
   ApiNotAcceptableResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiQuery,
-  ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
   ApiUnprocessableEntityResponse,
@@ -36,8 +36,8 @@ import { ResponseType } from 'src/common/type/response.type';
 import { CreateFeedInput } from './dto/createFeed.input';
 import {
   FetchFeedOptions,
-  OrderByOption,
   OrderOption,
+  SortOption,
 } from './dto/fetchFeed.options';
 import { FetchFeedsOutput } from './dto/fetchFeed.output';
 
@@ -101,6 +101,7 @@ export class FeedController {
   })
   @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
   @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
+  @ApiForbiddenResponse({ description: ErrorType.feed.notYours.msg })
   updateFeed(
     @CurrentUser() currentUser: ICurrentUser,
     @Param('feedId') feedId: number,
@@ -112,6 +113,7 @@ export class FeedController {
   /**
    * @summary 게시글 삭제 api
    * @param feedId
+   * @param currentUser
    * @returns string
    */
   @Delete(':feedId')
@@ -127,8 +129,15 @@ export class FeedController {
   @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
   @ApiUnprocessableEntityResponse({ description: ErrorType.feed.delete.msg })
   @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
-  async deleteFeed(@Param('feedId') feedId: number): Promise<string> {
-    const isDeleted: boolean = await this.feedService.delete({ feedId });
+  @ApiForbiddenResponse({ description: ErrorType.feed.notYours.msg })
+  async deleteFeed(
+    @CurrentUser() currentUser: ICurrentUser,
+    @Param('feedId') feedId: number,
+  ): Promise<string> {
+    const isDeleted: boolean = await this.feedService.delete({
+      currentUser,
+      feedId,
+    });
     if (isDeleted) return ResponseType.feed.delete.msg;
     else throw new UnprocessableEntityException(ErrorType.feed.delete.msg);
   }
@@ -152,8 +161,12 @@ export class FeedController {
   })
   @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
   @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
-  async restoreFeed(@Param('feedId') feedId: number) {
-    const isRestored = await this.feedService.restore({ feedId });
+  @ApiForbiddenResponse({ description: ErrorType.feed.notYours.msg })
+  async restoreFeed(
+    @CurrentUser() currentUser: ICurrentUser,
+    @Param('feedId') feedId: number,
+  ) {
+    const isRestored = await this.feedService.restore({ currentUser, feedId });
     if (isRestored) return ResponseType.feed.restore.msg;
     else throw new NotFoundException(ErrorType.feed.restore.msg);
   }
@@ -173,14 +186,7 @@ export class FeedController {
   })
   @ApiBearerAuth('access_token')
   @ApiParam({ name: 'feedId', schema: { example: 1 } })
-  @ApiResponse({
-    status: ResponseType.feed.like.code,
-    description: ResponseType.feed.like.msg,
-  })
-  @ApiResponse({
-    status: ResponseType.feed.cancelLike.code,
-    description: ResponseType.feed.cancelLike.msg,
-  })
+  @ApiCreatedResponse({ description: ResponseType.feed.like.msg })
   @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
   @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
   @ApiNotAcceptableResponse({ description: ErrorType.feed.failLike.msg })
@@ -195,6 +201,7 @@ export class FeedController {
 
   /**
    * @summary 게시글 상세 조회 Api
+   * @description 상세 조회 Api 호출시 queryBus를 통해 조회수가 증가합니다
    * @param feedId
    * @returns `Feed`
    */
@@ -215,10 +222,11 @@ export class FeedController {
   }
 
   /**
-   * @summary 게시글 목록 조회 Api
+   * @summary 게시글 목록 검색 조회 Api
+   * @description 옵션에 따라 게시글을 검색 조회합니다 해시태그는 sql 와일드카드를 이용해 검색합니다
    * @param search
+   * @param sort
    * @param order
-   * @param orderBy
    * @param filter
    * @param page
    * @param pageCount
@@ -227,8 +235,8 @@ export class FeedController {
   @Get()
   // 스웨거 데코레이터
   @ApiOperation({
-    description: '게시글 목록 조회 Api입니다',
-    summary: '게시글 목록 조회',
+    description: '게시글 목록 검색 조회 Api입니다',
+    summary: '게시글 목록 검색 조회',
   })
   @ApiQuery({
     name: 'search',
@@ -237,15 +245,15 @@ export class FeedController {
     required: false,
   })
   @ApiQuery({
-    name: 'order',
-    enum: OrderOption,
+    name: 'sort',
+    enum: SortOption,
     description: '정렬 기준',
     example: 'createdAt',
     required: false,
   })
   @ApiQuery({
-    name: 'orderBy',
-    enum: OrderByOption,
+    name: 'order',
+    enum: OrderOption,
     description: '정렬 순서',
     example: 'DESC',
     required: false,
@@ -270,20 +278,20 @@ export class FeedController {
   })
   @ApiOkResponse({
     type: FetchFeedsOutput,
-    description: ResponseType.feed.fetchs.msg,
+    description: ResponseType.feed.fetches.msg,
   })
   fetchFeeds(
     @Query('search') search?: string,
+    @Query('sort') sort?: SortOption,
     @Query('order') order?: OrderOption,
-    @Query('orderBy') orderBy?: OrderByOption,
     @Query('filter') filter?: string,
     @Query('page') page?: number,
     @Query('pageCount') pageCount?: number,
   ): Promise<FetchFeedsOutput> {
     const fetchFeedOptions: FetchFeedOptions = {
       search,
+      sort,
       order,
-      orderBy,
       filter,
       page,
       pageCount,

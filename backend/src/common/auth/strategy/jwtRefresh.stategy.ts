@@ -7,6 +7,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
   constructor() {
     super({
       jwtFromRequest: (req) => req.headers.cookie.replace('refreshToken=', ''),
+      // 쿠키에서 리프레시 토큰을 가져와 검증
       secretOrKey: process.env.JWT_REFRESH_KEY,
       passReqToCallback: true,
     });
