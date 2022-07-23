@@ -20,7 +20,10 @@ export class AuthService {
       );
 
       res // 리프레시 토큰이 쿠키에 저장되고 유지됩니다
-        .setHeader('Access-Control-Allow-Origin', 'http://localhost:3003')
+        .setHeader(
+          'Access-Control-Allow-Origin',
+          `${process.env.ALLOW_ORIGIN_URL}`,
+        )
         .cookie(
           `refreshToken=${refreshToken}; SameSite=None; Secure=true; httpOnly=true;`,
         );
