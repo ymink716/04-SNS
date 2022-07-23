@@ -27,8 +27,8 @@ export class Post {
   content: string;
 
   @ApiProperty({ description: '해시테그', example: '#서울,#맛집' })
-  @Column({ nullable: false, type: 'varchar' })
-  hashtagText: string;
+  @Column({ nullable: true, type: 'varchar' })
+  hashtagsText: string;
 
   @ApiProperty({ description: '조회수', example: 0 })
   @Column({ type: 'integer', default: 0 })
@@ -58,10 +58,10 @@ export class Post {
   deletedAt: Date;
 
   // 게시물 : 사용자 -> n:1
-  @ManyToOne(type => User, user => user.posts)
+  @ManyToOne(() => User, user => user.posts)
   user: User;
 
   // 게시물 : 게시물_해시태그 -> 1:n
-  @OneToMany(type => PostHashtag, postHashtag => postHashtag.post)
+  @OneToMany(() => PostHashtag, postHashtag => postHashtag.post)
   postHashtags: PostHashtag[];
 }

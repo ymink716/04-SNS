@@ -35,6 +35,6 @@ export class Hashtag {
   updatedAt: Date;
 
   // 해시태그 : 게시물_해시태그 -> 1:n
-  @OneToMany(type => PostHashtag, postHashtag => postHashtag.hashtag)
+  @OneToMany(() => PostHashtag, postHashtag => postHashtag.hashtag)
   postHashtags: PostHashtag[];
 }

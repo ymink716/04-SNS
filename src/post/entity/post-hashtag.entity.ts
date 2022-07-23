@@ -1,12 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  Column,
   Entity,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
   CreateDateColumn,
-  OneToMany,
-  DeleteDateColumn,
   ManyToOne,
 } from 'typeorm';
 import { Hashtag } from './hashtag.entity';
@@ -25,19 +21,17 @@ export class PostHashtag {
   })
   createdAt: Date;
 
-  @ApiProperty({ description: '수정일' })
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
-  updatedAt: Date;
-
   // 게시물_해시태그 : 게시물 -> n:1
-  @ManyToOne(type => Post, post => post.postHashtags)
+  @ManyToOne(() => Post, post => post.postHashtags, {
+    onDelete: 'CASCADE',
+    nullable: false
+  })
   post: Post;
 
   // 게시물_해시태그 : 해시태그 : -> n:1
-  @ManyToOne(type => Hashtag, hashTag => hashTag.postHashtags)
+  @ManyToOne(() => Hashtag, hashTag => hashTag.postHashtags, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   hashtag: Hashtag;
 }

@@ -11,6 +11,7 @@ export class CreatePostDto {
   @ApiProperty({ description: '내용', example: '서울 맛집 추천합니다~' })
   @IsString()
   @MaxLength(500)
+  @IsNotEmpty()
   readonly content: string;
 
   @ApiProperty({ description: '해시태그', example: '#서울,#맛집' })

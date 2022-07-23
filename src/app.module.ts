@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
-import { BoardModule } from './board/board.module';
 import { LikeModule } from './like/like.module';
 import { UserModule } from './user/user.module';
 import { PostModule } from './post/post.module';
@@ -28,7 +27,6 @@ import { PostModule } from './post/post.module';
       timezone: 'Z',
     }),
     AuthModule, 
-    BoardModule, 
     LikeModule, UserModule, PostModule
   ],
 })

@@ -48,6 +48,6 @@ export class User {
   hashedRefreshToken?: string;
 
   // 사용자 : 게시물 -> 1:n
-  @OneToMany(type => Post, post => post.user)
+  @OneToMany(() => Post, post => post.user)
   posts: Post[];
 }
