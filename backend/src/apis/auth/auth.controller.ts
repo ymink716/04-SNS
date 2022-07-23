@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   ForbiddenException,
+  NotFoundException,
   Post,
   Res,
   UseGuards,
@@ -11,6 +12,7 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
+  ApiNotFoundResponse,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -46,6 +48,7 @@ export class AuthController {
   @ApiCreatedResponse({
     description: ResponseType.auth.loginUser.msg,
   })
+  @ApiNotFoundResponse({ description: ErrorType.user.userNotFound.msg })
   @ApiForbiddenResponse({ description: ErrorType.auth.validatePassword.msg })
   async login(
     @Res({ passthrough: true }) res: Response,
@@ -53,6 +56,7 @@ export class AuthController {
   ) {
     const { email, password } = loginInput;
     const user = await this.userService.fetch({ email });
+    if (!user) throw new NotFoundException(ErrorType.user.userNotFound.msg);
 
     // jwt 토큰 검증
     const isAuth = this.authService.validatePassword({
