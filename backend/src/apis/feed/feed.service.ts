@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FetchFeedQuery } from 'src/apis/feed/handler/fetchFeed.query';
+import { ErrorType } from 'src/common/type/error.type';
 import { Brackets, Connection, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
@@ -28,128 +33,132 @@ export class FeedService {
     private readonly queryBus: QueryBus,
   ) {}
 
-  async create({ user, createFeedInput }): Promise<Feed> {
-    const userInfo: User = await this.userService.fetch({ email: user.email });
+  async create({ currentUser, createFeedInput }): Promise<Feed> {
+    const user: User = await this.userService.fetch({
+      email: currentUser.email,
+    });
 
-    if (!userInfo) throw new NotFoundException('유저 정보가 존재하지 않습니다');
     const result = await this.feedRepository.save({
-      user: userInfo,
+      user,
       ...createFeedInput,
     });
+
     delete result.user.password;
     return result;
   }
 
-  async update({ feedId, user, updateFeedInput }) {
-    const userInfo: User = await this.userService.fetch({ email: user.email });
-
-    if (!userInfo) throw new NotFoundException('유저 정보가 존재하지 않습니다');
+  async update({ feedId, currentUser, updateFeedInput }): Promise<Feed> {
+    const user: User = await this.userService.fetch({
+      email: currentUser.email,
+    });
 
     const feed = await this.feedRepository.findOne({ where: { id: feedId } });
 
-    if (!feed) throw new NotFoundException('존재하지 않는 게시글입니다');
+    if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
 
     const result = await this.feedRepository.save({
       ...feed,
-      user: userInfo,
+      user,
       ...updateFeedInput,
     });
+
     delete result.user.password;
     return result;
   }
-  async delete({ feedId }) {
+
+  async delete({ feedId }): Promise<boolean> {
     const feed = await this.feedRepository.findOne({ where: { id: feedId } });
 
-    if (!feed) throw new NotFoundException('존재하지 않는 게시글입니다');
+    if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
+
     const result = await this.feedRepository.softDelete({ id: feedId });
 
     return result.affected ? true : false;
   }
 
-  async restore({ feedId }) {
+  async restore({ feedId }): Promise<boolean> {
     const feed = await this.feedRepository.findOne({
       where: { id: feedId },
       withDeleted: true,
     });
-    if (!feed) throw new NotFoundException('존재하지 않는 게시글입니다');
+
+    if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
 
     const result = await this.feedRepository.restore({ id: feedId });
+
     return result.affected ? true : false;
   }
 
-  async like({ user, feedId }) {
+  async like({ currentUser, feedId }): Promise<boolean> {
     const queryRunner = this.connection.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('READ COMMITTED');
     try {
-      const feedLike = await queryRunner.manager.findOne(
-        FeedLike, //
-        { where: { feed: feedId } },
-      );
-
-      const userInfo = await this.userRepository.findOne({
-        where: { email: user.email },
+      const user = await this.userRepository.findOne({
+        where: { email: currentUser.email },
       });
 
       const feed = await queryRunner.manager.findOne(Feed, {
         where: { id: feedId },
       });
 
-      if (!feed || !userInfo) throw new NotFoundException();
+      if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
 
-      if (!feedLike) {
-        const updateLike = this.feedLikeRepository.create({
+      const feedLike = await this.feedLikeRepository
+        .createQueryBuilder('feedLike')
+        .leftJoin('feedLike.user', 'user')
+        .leftJoin('feedLike.feed', 'feed')
+        .where({ user })
+        .andWhere({ feed })
+        .getOne();
+
+      let updateLike: FeedLike;
+      let updateFeed: Feed;
+      let likeStatus: boolean = null;
+
+      if (!feedLike.isLike || !feedLike) {
+        // case 1.좋아요를 누르지 않은 상태
+        // case 2.좋아요 관계가 형성되어있지 않은 상태
+        // 좋아요 상태를 true로 변경하고 피드의 좋아요 수를 증가시킵니다
+        updateLike = this.feedLikeRepository.create({
+          ...feedLike,
           user,
           feed,
           isLike: true,
         });
-        await queryRunner.manager.save(updateLike);
 
-        const updateFeed = this.feedRepository.create({
+        updateFeed = this.feedRepository.create({
           ...feed,
           likeCount: feed.likeCount + 1,
         });
-        await queryRunner.manager.save(updateFeed);
-        await queryRunner.commitTransaction();
 
-        return true;
-      } else {
-        if (feedLike.isLike) {
-          const updateLike = this.feedLikeRepository.create({
-            ...feedLike,
-            user,
-            feed,
-            isLike: false,
-          });
-          await queryRunner.manager.save(updateLike);
+        likeStatus = true;
+      } else if (feedLike.isLike) {
+        // case 3. 이미 좋아요를 누른 상태
+        // 좋아요 취소로 간주합니다
+        // 좋아요 상태를 false로 변경하고 피드의 좋아요 수를 감소시킵니다
+        updateLike = this.feedLikeRepository.create({
+          ...feedLike,
+          user,
+          feed,
+          isLike: false,
+        });
 
-          const updateFeed = this.feedRepository.create({
-            ...feed,
-            likeCount: feed.likeCount - 1,
-          });
-          await queryRunner.manager.save(updateFeed);
-          await queryRunner.commitTransaction();
+        updateFeed = this.feedRepository.create({
+          ...feed,
+          likeCount: feed.likeCount - 1,
+        });
 
-          return false;
-        } else {
-          const updateLike = this.feedLikeRepository.create({
-            ...feedLike,
-            user,
-            feed,
-            isLike: true,
-          });
-          await queryRunner.manager.save(updateLike);
-
-          const updateFeed = this.feedRepository.create({
-            ...feed,
-            likeCount: feed.likeCount + 1,
-          });
-          await queryRunner.manager.save(updateFeed);
-          await queryRunner.commitTransaction();
-
-          return true;
-        }
+        likeStatus = false;
       }
+      if (likeStatus === null)
+        throw new NotAcceptableException(ErrorType.feed.failLike.msg);
+
+      await queryRunner.manager.save(updateLike);
+      await queryRunner.manager.save(updateFeed);
+      await queryRunner.commitTransaction();
+
+      return likeStatus;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -159,21 +168,44 @@ export class FeedService {
   }
 
   async findOne({ feedId }): Promise<Feed> {
-    const result = await this.feedRepository.findOne({ where: { id: feedId } });
-    const fetchFeedQuery = new FetchFeedQuery(result);
+    const feed = await this.feedRepository
+      .createQueryBuilder('feed')
+      .where('feed.id', { feedId })
+      .leftJoin('feed.user', 'user')
+      .addSelect('user.email')
+      .getOne();
+
+    if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
+
+    const fetchFeedQuery = new FetchFeedQuery(feed);
     this.queryBus.execute(fetchFeedQuery);
-    delete result.user.password;
-    return result;
+
+    delete feed.user.password;
+    return feed;
   }
 
-  async findList({ ...fetchFeedOptions }: FetchFeedOptions) {
+  async findList({
+    ...fetchFeedOptions
+  }: FetchFeedOptions): Promise<FetchFeedsOutput> {
     let { order, orderBy, page, pageCount } = fetchFeedOptions;
     const { filter, search } = fetchFeedOptions;
-    const qb = this.feedRepository.createQueryBuilder('feed');
+    const qb = this.feedRepository
+      .createQueryBuilder('feed')
+      .leftJoin('feed.user', 'user')
+      .addSelect('user.email');
+
+    // default 값 설정
+    order = order || OrderOption.CREATEDAT;
+    orderBy = orderBy || OrderByOption.DESC;
+    page = page || 1;
+    pageCount = pageCount || 10;
+
     let hashTags;
 
     if (filter) {
-      hashTags = filter.split(',');
+      hashTags = filter.split(',').map((el) => {
+        return '#' + el;
+      });
       qb.andWhere(
         new Brackets((qb) => {
           hashTags.forEach((el) => {
@@ -186,30 +218,19 @@ export class FeedService {
     if (search) {
       qb.andWhere(
         new Brackets((qb) => {
-          qb.andWhere('feed.title like :title', {
+          qb.orWhere('feed.title like :title', {
             title: `%${search}%`,
           }).orWhere('feed.content like :content', { content: `%${search}%` });
         }),
       );
     }
 
-    if (order && orderBy) {
-      qb.orderBy(`feed.${order}`, orderBy);
-    } else {
-      order = OrderOption.CREATEDAT;
-      orderBy = OrderByOption.ASC;
-      qb.orderBy(`feed.${order}`, orderBy); // default
-    }
+    const result = await qb
+      .orderBy(`feed.${order}`, orderBy)
+      .take(pageCount)
+      .skip((page - 1) * pageCount)
+      .getManyAndCount();
 
-    if (page && pageCount) {
-      qb.take(pageCount).skip((page - 1) * pageCount);
-    } else {
-      page = 1;
-      pageCount = 10;
-      qb.take(pageCount).skip((page - 1) * pageCount); // default
-    }
-
-    const result = await qb.getManyAndCount();
     const [feeds, total] = result;
     const output: FetchFeedsOutput = {
       feeds,
@@ -217,7 +238,9 @@ export class FeedService {
       pageCount,
       total,
       search,
-      filter: hashTags,
+      order,
+      orderBy,
+      filter: hashTags || null,
     };
     return output;
   }

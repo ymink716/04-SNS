@@ -27,18 +27,28 @@ import { CurrentUser, ICurrentUser } from 'src/common/auth/currentUser';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // swagger
+  /**
+   * @summary 유저 조회 Api
+   * @param currentUser
+   * @returns
+   */
+  @Get()
+  @UseGuards(JwtAccessGuard)
+  // 스웨거 데코레이터
   @ApiOperation({ description: '유저조회 API입니다', summary: '유저 조회' })
   @ApiBearerAuth('access_token')
   @ApiOkResponse({ type: User, description: '유저 조회 성공!' })
-  // swagger
-  @UseGuards(JwtAccessGuard)
-  @Get()
-  fetchUser(@CurrentUser() user: ICurrentUser) {
-    return this.userService.fetch({ email: user.email });
+  fetchUser(@CurrentUser() currentUser: ICurrentUser) {
+    return this.userService.fetch({ email: currentUser.email });
   }
 
-  // swagger
+  /**
+   * @summary 유저 생성 / 회원 가입 Api
+   * @param createUserInput
+   * @returns
+   */
+  @Post()
+  //스웨거 데코레이터
   @ApiOperation({ description: '회원가입 API입니다', summary: '회원가입' })
   @ApiBadRequestResponse({
     status: 400,
@@ -52,13 +62,11 @@ export class UserController {
     status: 500,
     description: '비밀번호 해싱 에러',
   })
-  // swagger
   @ApiCreatedResponse({
     type: User,
     description: '회원가입 성공!',
     status: 201,
   })
-  @Post()
   createUser(
     @Body(ValidationPipe) createUserInput: CreateUserInput,
   ): Promise<User> {

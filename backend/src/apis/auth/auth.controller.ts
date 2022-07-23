@@ -23,10 +23,17 @@ export class AuthController {
     private readonly authService: AuthService,
   ) {}
 
+  /**
+   * @summary 로그인 조회 Api
+   * @param res
+   * @param loginInput
+   * @returns string
+   */
+  @Post('login')
+  // 스웨거 데코레이터
   @ApiBody({ type: loginInput })
   @ApiResponse({ type: String, description: '로그인 성공!', status: 201 })
   @ApiOperation({ description: '로그인 API입니다', summary: '로그인' })
-  @Post('login')
   async login(
     @Res({ passthrough: true }) res: Response,
     @Body(ValidationPipe) loginInput: loginInput,
@@ -45,7 +52,14 @@ export class AuthController {
     return this.authService.getAccessToken({ user });
   }
 
+  /**
+   * @summary access 토큰 복구 Api
+   * @param currentUser
+   * @returns string
+   */
+  @Post('restoreAccessToken')
   @UseGuards(JwtRefreshGuard)
+  // 스웨거 데코레이터
   @ApiOperation({
     description: 'Access 토큰 복구 API입니다',
     summary: 'Access 토큰 복구',
@@ -55,7 +69,6 @@ export class AuthController {
     description: 'Access 토큰 복구 성공!',
     status: 201,
   })
-  @Post('restoreAccessToken')
   restoreAccessToken(
     @CurrentUser() currentUser: ICurrentUser, //
   ) {

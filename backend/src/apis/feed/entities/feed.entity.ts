@@ -13,32 +13,40 @@ import { User } from 'src/apis/user/entities/user.entity';
 
 @Entity()
 export class Feed {
-  @ApiProperty({ description: '게시글의 uuid' })
+  @ApiProperty({ description: '게시글의 id', example: 1 })
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @ApiProperty({ description: '게시글 제목' })
+  @ApiProperty({ description: '게시글 제목', example: '서울 맛집 추천' })
   @Column('varchar')
   title: string;
 
-  @ApiProperty({ description: '게시글 내용' })
+  @ApiProperty({
+    description: '게시글 내용',
+    example: '종로구 부대찌개 맛집 추천드려요!',
+  })
   @Column({ type: 'mediumtext' })
   content: string;
 
-  @ApiProperty({ description: '게시글 해시태그', nullable: true })
+  @ApiProperty({
+    description: '게시글 해시태그',
+    example: '#종로구,#부대찌개,#주말,#맛집',
+    nullable: true,
+  })
   @Column({ type: 'mediumtext' })
   hashTags: string;
 
-  @ApiProperty({ description: '게시글 조회수' })
+  @ApiProperty({ description: '게시글 조회수', default: 0 })
   @Column({ default: 0 })
   watchCount: number;
 
-  @ApiProperty({ description: '게시글 좋아요수' })
+  @ApiProperty({ description: '게시글 좋아요수', default: 0 })
   @Column({ default: 0 })
   likeCount: number;
 
   @ApiPropertyOptional({
-    type: () => User,
+    type: Object,
+    example: { email: 'test@mail.com' },
     description: '게시글을 작성한 유저 정보',
   })
   @ManyToOne(() => User, { onDelete: 'CASCADE', eager: true })
