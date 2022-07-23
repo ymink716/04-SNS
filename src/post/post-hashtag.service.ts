@@ -23,4 +23,9 @@ export class PostHashtagService {
       await this.postHashtagRepository.save(postHashtag);
     }
   }
+
+  async deletePostHashtagByPost(post: Post) {
+    const result = await this.postHashtagRepository.delete({ post });
+    console.log(result);
+}
 }

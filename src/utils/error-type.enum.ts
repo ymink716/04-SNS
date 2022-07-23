@@ -10,10 +10,10 @@ export const ErrorType = {
   nicknameExist: { code: 409, message: '해당 닉네임은 이미 사용중입니다!' },
   emailExist: { code: 409, message: '해당 이메일은 이미 사용중입니다!' },
 
-  // Board
-  boardNotFound: { code: 404, message: '해당 게시물이 존재하지 않습니다' },
-  boardBadRequest: { code: 400, message: '해당 게시물 정보와 일치하지 않습니다.' },
-  boardForbidden: { code: 400, message: '해당 게시물에 접근할 수 없습니다.' }, 
+  // Post
+  postNotFound: { code: 404, message: '해당 게시물이 존재하지 않습니다' },
+  postBadRequest: { code: 400, message: '해당 게시물 정보와 일치하지 않습니다.' },
+  postForbidden: { code: 403, message: '해당 게시물에 접근할 권한이 없습니다.' }, 
 
   // Server
   serverError: { code: 500, message: '서버에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.' },

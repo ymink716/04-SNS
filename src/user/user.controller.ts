@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiNotFoundResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { ErrorType } from 'src/utils/error.enum';
+import { ErrorType } from 'src/utils/error-type.enum';
 import { GetUser } from 'src/utils/get-user.decorator';
 import { ResponseType } from 'src/utils/response.enum';
 import { User } from './entity/user.entity';

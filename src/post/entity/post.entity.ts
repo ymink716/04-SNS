@@ -44,17 +44,13 @@ export class Post {
   @ApiProperty({ description: '수정일' })
   @UpdateDateColumn({
     type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
+    nullable: true,
     onUpdate: 'CURRENT_TIMESTAMP(6)',
   })
   updatedAt: Date;
 
   @ApiProperty({ description: '삭제일' })
-  @DeleteDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP(6)',
-    onUpdate: 'CURRENT_TIMESTAMP(6)',
-  })
+  @DeleteDateColumn({ type: 'timestamp', nullable: true })
   deletedAt: Date;
 
   // 게시물 : 사용자 -> n:1

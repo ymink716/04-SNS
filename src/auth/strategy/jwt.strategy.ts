@@ -3,7 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { User } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
-import { ErrorType } from 'src/utils/error.enum';
+import { ErrorType } from 'src/utils/error-type.enum';
 
 /**
   * @description passport jwt strategy를 구체화

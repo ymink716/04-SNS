@@ -28,6 +28,10 @@ export class HashtagService {
     return hashtagList;
   }
 
+  async updateHashtagList(hashtags: string) {
+    throw new Error('Method not implemented.');
+  }
+
   splitHashtags(hashtags: string): string[] {
     const regexp = /[^#,]+/g;  // # , 제외하고 검색
     const matchedArray = [ ...hashtags.matchAll(regexp) ]
