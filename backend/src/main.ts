@@ -11,7 +11,10 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.setGlobalPrefix('/api/v1');
   app.use(cookieParser());
-
+  app.enableCors({
+    credentials: true,
+    origin: [`${process.env.ALLOW_ORIGIN_URL}`],
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
