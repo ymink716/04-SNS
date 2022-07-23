@@ -24,6 +24,10 @@ export class AuthService {
           'Access-Control-Allow-Origin',
           `${process.env.ALLOW_ORIGIN_URL}`,
         )
+        .setHeader(
+          'Access-Control-Allow-Headers',
+          'Content-Type, api_key, Authorization',
+        )
         .cookie(
           `refreshToken=${refreshToken}; SameSite=None; Secure=true; httpOnly=true; Path=/; domain=${process.env.COOKIE_DOMAIN};`,
         );
