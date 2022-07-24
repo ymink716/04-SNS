@@ -25,7 +25,7 @@ export class AuthService {
           `${process.env.ALLOW_ORIGIN_URL}`,
         )
         .cookie(
-          `refreshToken=${refreshToken}; SameSite=None; Secure=true; httpOnly=true;`,
+          `refreshToken=${refreshToken}; Domain= ${process.env.COOKIE_DOMAIN} SameSite=None; Secure=true; httpOnly=true;`,
         );
     } catch (e) {
       throw new InternalServerErrorException(e.msg);
