@@ -23,10 +23,11 @@ export class AuthService {
         .setHeader(
           'Access-Control-Allow-Origin',
           `${process.env.ALLOW_ORIGIN_URL}`,
-        )
-        .cookie(
-          `refreshToken=${refreshToken}; HttpOnly; SameSite=None; Secure=true; Path=/;`,
         );
+      res.setHeader(
+        'Set-Cookie',
+        `refreshToken=${refreshToken}; HttpOnly; SameSite=None; Secure=true; Path=/;`,
+      );
     } catch (e) {
       throw new InternalServerErrorException(e.msg);
     }
