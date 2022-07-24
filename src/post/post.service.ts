@@ -91,6 +91,10 @@ export class PostService {
     }
   }
 
+  getOne(postId: number) {
+    throw new Error('Method not implemented.');
+  }
+
   async getPostById(id: number) {
     const post: Post = await this.postRepository.findOne({ 
       where: { id }, 

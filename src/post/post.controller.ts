@@ -5,8 +5,6 @@ import { User } from 'src/user/entity/user.entity';
 import { GetUser } from 'src/utils/get-user.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { Hashtag } from './entity/hashtag.entity';
-import { Post as PostEntity } from './entity/post.entity';
 import { HashtagService } from './hashtag.service';
 import { PostHashtagService } from './post-hashtag.service';
 import { PostService } from './post.service';
@@ -28,6 +26,7 @@ export class PostController {
   
     const hashtagList = await this.hashtagService.createHashtagList(hashtags);
     const post = await this.postService.createPost(createPostDto, user);
+
     await this.postHashtagService.createPostHashtags(hashtagList, post);
 
     return post;
@@ -72,9 +71,11 @@ export class PostController {
     await this.postService.restorePost(postId, user);
   }
 
-  @Get('/:id')
-  async getOne() {
-    return
+  @Get('/:postId')
+  async getOne(@Param('postId', ParseIntPipe) postId: number,) {
+    const post = await this.postService.getOne(postId);
+
+    return post;
   }
 
   @Get()

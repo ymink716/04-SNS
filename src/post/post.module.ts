@@ -11,6 +11,7 @@ import { PostService } from './post.service';
 @Module({
   imports: [TypeOrmModule.forFeature([ Post, Hashtag, PostHashtag ])],
   controllers: [PostController],
-  providers: [PostService, HashtagService, PostHashtagService]
+  providers: [PostService, HashtagService, PostHashtagService],
+  exports: [PostService]
 })
 export class PostModule {}

@@ -9,6 +9,7 @@ import {
   CreateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { Like } from 'src/like/entity/like.entity';
 
 @Entity()
 export class User {
@@ -50,4 +51,8 @@ export class User {
   // 사용자 : 게시물 -> 1:n
   @OneToMany(() => Post, post => post.user)
   posts: Post[];
+
+  // 사용자 : 좋아요 -> 1:n
+  @OneToMany(() => Like, like => like.user)
+  likes: Like[];
 }
