@@ -18,17 +18,16 @@ export class AuthService {
         { email: user.email, createdAt: user.createdAt },
         { secret: refreshKey, expiresIn: expireTime },
       );
-
-      res // 리프레시 토큰이 쿠키에 저장되고 유지됩니다
-        .setHeader(
-          'Access-Control-Allow-Origin',
-          `${process.env.ALLOW_ORIGIN_URL}`,
-        );
+      res.setHeader(
+        'Access-Control-Allow-Origin',
+        `${process.env.ALLOW_ORIGIN_URL}`,
+      );
       res.setHeader(
         'Set-Cookie',
         `refreshToken=${refreshToken}; Path=/; HttpOnly`,
       );
-      //SameSite=None; Secure=true;
+      // 리프레시 토큰이 쿠키에 저장되고 유지됩니다
+      // 쿠키의 SameSite, Secure 옵션은 https에서만 가능하기에 http환경인 본 서버에서는 배제했습니다
     } catch (e) {
       throw new InternalServerErrorException(e.msg);
     }
