@@ -7,15 +7,53 @@
 
 - [04-SNS](#04-sns)
   - [🔖 목차](#-목차)
+  - [🧐 프로젝트 상세](#-프로젝트-상세)
   - [💿 기술 스택](#-기술-스택)
-  - [💾 ERD 설계](#-erd-설계)
+  - [🌕 프로젝트 실행 및 테스트](#-프로젝트-실행-및-테스트)
   - [🚀 API 항목](#-api-항목)
     - [**🚶🏻 User**](#-user)
     - [**📋 Feed**](#-feed)
     - [**📋 Auth**](#-auth)
-  - [🌕 프로젝트 실행 및 테스트](#-프로젝트-실행-및-테스트)
+  - [💾 ERD 설계](#-erd-설계)
+  - [🔒 ENV](#-env)
 
-<br />
+<br>
+
+## 🧐 프로젝트 상세
+
+1. 로그인
+
+   - 로그인 시 액세스 토큰이 발급되며 헤더에 리프레시 토큰이 쿠키에 저장됩니다
+   - 발급된 액세스 토큰을 통해 사용자 인증을 진행합니다
+   - 사용자 인증이 필요한 API는 다음과 같습니다
+     - 유저 조회
+     - 액세스 토큰 재발급(복구) : 쿠키에 유지되는 리프레시 토큰을 이용합니다
+     - 게시글 생성, 수정, 삭제, 복구, 좋아요
+
+2. 유저 관리
+
+   - 이메일을 PK로 사용하며 password는 bcrypt를 통해 암호화된 상태로 DB에 저장됩니다
+
+3. 게시글 생성, 수정, 삭제, 복구
+
+   - TypeOrm을 통해 MySQL DB에 관련 정보가 저장됩니다
+   - 게시글 생성 시 별도의 테이블을 만들지 않고 해시태그가 #가 붙은 문자열의 모음으로 저장됩니다.(ex) `#태그`)
+
+4. 게시글 상세 조회
+
+   - 게시글 조회시 CQRS쿼리버스를 통해 게시글의 조회수가 증가합니다
+
+5. 게시글 리스트 검색 조회
+
+- 다음과 같은 쿼리 파라미터들을 이용해 검색합니다
+- `search` : 게시글 제목 혹은 본문을 검색합니다 `like` SQL문과 와일드카드(`%`)를 이용해 검색합니다
+- `filter` : 해시태그 수만큼 TypeORM 쿼리빌더를 통해 `like` SQL문과 와일드카드(`%`)를 이용해 검색합니다
+- `sort` & `order` :
+  - `sort`:생성일, 조회수, 좋아요 수 중 어떤 기준으로 정렬할지 정합니다 ( default : 생성일 )
+  - `order`: 오름차순으로 정렬할지 내림차순으로 정렬할지 정합니다 ( default : 내림차순 )
+- `page` & `pageCount` :
+  - `page` : 몇번째 페이지를 조회할지 정합니다 ( default : 1 )
+  - `pageCount` : 한 페이지당 조회될 게시글 수를 정합니다 ( default : 10 )
 
 ## 💿 기술 스택
 
@@ -52,13 +90,52 @@
 <img alt= "icon" wide="60" height="60" src ="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png">
 </p>
 
+<p align="center">
+🏖&nbsp&nbsp&nbsp 배포
+  </p>
+<p align="center">
+<img alt= "icon" wide="60" height="60" src ="https://camo.githubusercontent.com/79864e687ef243c4008d8c7c9ecc7b77548625b867ce08094beee7a417d41585/68747470733a2f2f6c6972702e63646e2d776562736974652e636f6d2f61613065663336392f646d73337265702f6d756c74692f6f70742f676f6f676c652d636c6f75642d69636f6e2d353730772e706e67">
+</p>
+
 ---
 
 <br>
 
-## 💾 ERD 설계
+## 🌕 프로젝트 실행 및 테스트
 
-![](image/ERD.png)
+**local에서 테스트** 💡
+
+- 실행 명령어
+
+```
+git clone https://github.com/pre-onboarding-backend-E/04-SNS
+git checkout taeyoung
+cd backend
+env/.env 추가
+docker compose build
+docker compose up
+```
+
+- RestApi로 테스트하기
+
+  - [Api 항목](#-api-항목)을 참고하여 Rest-Api 호출
+
+- Swagger Docs에서 테스트하기
+  - http://localhost:3003/api/docs
+
+**배포 서버에서 테스트** 💡
+
+- RestApi로 테스트하기
+
+  - localhost => leo3179.shop:3003
+  - [Api 항목](#-api-항목)을 참고하여 Rest-Api 호출
+
+- Swagger Docs에서 테스트하기
+  - http://leo3179.shop:3003/api/docs
+
+<br>
+
+<br>
 
 ## 🚀 API 항목
 
@@ -196,32 +273,26 @@
 
 <br>
 
-## 🌕 프로젝트 실행 및 테스트
+## 💾 ERD 설계
 
-**1. 실행 방법** 💡
+![](image/ERD.png)
 
-- local 실행시 명령어
+<br>
+
+## 🔒 ENV
+
+- 위치 : /env/.env
+- local에서 실행시 샘플로 사용할 env는 다음과 같습니다
 
 ```
-git clone https://github.com/pre-onboarding-backend-E/04-SNS
-git checkout taeyoung
-cd backend
-docker compose build
-docker compose up
+DB_HOST=database-server
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=1178
+DB_DATABASE=sns
+JWT_ACCESS_KEY=AK
+JWT_REFRESH_KEY=RK
+JWT_ACCESS_EXPIRATION_TIME=5h
+JWT_REFRESH_EXPIRATION_TIME=10h
+ALLOW_ORIGIN_URL=http://localhost:3003
 ```
-
-**2. API 테스트 방법** 💡
-
-- local
-  - http://localhost:3003/api/docs
-  <!-- - deployed server
-  - http://3.39.69.233/api/hello - 배포 서버 링크 -->
-
-**3. Swagger 테스트 방법** 💡
-
-- local
-  - http://localhost:3003/api/docs 접속
-  <!-- - deployed server
-  - http://3.39.69.233/api/docs 접속 - 배포 서버 링크 ( 스웨거 ) -->
-
- <!-- **4. TDD** 💡 -->

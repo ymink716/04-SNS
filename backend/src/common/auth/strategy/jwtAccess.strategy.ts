@@ -7,6 +7,7 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'access') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // 헤더에서 액세스 토큰을 가져와 검증
       secretOrKey: process.env.JWT_ACCESS_KEY,
       passReqToCallback: true,
     });

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Feed } from '../entities/feed.entity';
-import { OrderByOption, OrderOption } from './fetchFeed.options';
+import { OrderOption, SortOption } from './fetchFeed.options';
 
 export class FetchFeedsOutput {
   @ApiProperty({ type: () => [Feed], description: '게시글 목록' })
@@ -25,9 +25,9 @@ export class FetchFeedsOutput {
   })
   filter: string[];
 
-  @ApiProperty({ description: '정렬 기준', example: OrderOption.CREATEDAT })
-  order: OrderOption;
+  @ApiProperty({ description: '정렬 기준', example: SortOption.CREATEDAT })
+  sort: SortOption;
 
-  @ApiProperty({ description: '정렬 기준', example: OrderByOption.DESC })
-  orderBy: OrderByOption;
+  @ApiProperty({ description: '정렬 기준', example: OrderOption.DESC })
+  order: OrderOption;
 }
