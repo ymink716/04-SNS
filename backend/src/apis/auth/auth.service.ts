@@ -22,10 +22,10 @@ export class AuthService {
       res // 리프레시 토큰이 쿠키에 저장되고 유지됩니다
         .setHeader(
           'Access-Control-Allow-Origin',
-          `'${process.env.ALLOW_ORIGIN_URL}'`,
+          `${process.env.ALLOW_ORIGIN_URL}`,
         )
         .cookie(
-          `refreshToken=${refreshToken}; Domain=${process.env.COOKIE_DOMAIN}; SameSite=None; Secure; HttpOnly;`,
+          `refreshToken=${refreshToken}; Domain=${process.env.COOKIE_DOMAIN}; SameSite=None; Secure; Path=/;`,
         );
     } catch (e) {
       throw new InternalServerErrorException(e.msg);
