@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Comment } from 'src/comment/entity/comment.entity';
 import { Like } from 'src/like/entity/like.entity';
 import { User } from 'src/user/entity/user.entity';
 import {
@@ -65,4 +66,8 @@ export class Post {
   // 게시물 : 좋아요 -> 1:n
   @OneToMany(() => Like, like => like.post)
   likes: Like[];
+
+  // 게시물 : 댓글 -> 1:n
+  @OneToMany(() => Comment, comment => comment.post)
+  comments: Comment[];
 }

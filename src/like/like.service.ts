@@ -1,6 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { count } from 'console';
 import { Post } from 'src/post/entity/post.entity';
 import { PostService } from 'src/post/post.service';
 import { User } from 'src/user/entity/user.entity';
