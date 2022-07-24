@@ -26,7 +26,7 @@ export class AuthService {
         );
       res.setHeader(
         'Set-Cookie',
-        `refreshToken=${refreshToken}; HttpOnly; SameSite=None; Secure=true; Path=/;`,
+        `refreshToken=${refreshToken}; HttpOnly; SameSite=None; Path=/;`,
       );
     } catch (e) {
       throw new InternalServerErrorException(e.msg);
