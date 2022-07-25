@@ -4,6 +4,7 @@ import { User } from 'src/user/entity/user.entity';
 import { ErrorType } from 'src/utils/error-type.enum';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
+import { GetPostsOptions, OrderOption, SortOption } from './dto/get-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entity/post.entity';
 import { PostViewLogService } from './post-view-log.service';
@@ -106,6 +107,52 @@ export class PostService {
       const updatedPost = await this.postRepository.save(post);
       return updatedPost;
     }
+  }
+
+  async getList(getPostsOptions: GetPostsOptions) {
+    const { search, filter } = getPostsOptions;
+    let { sort, order, page, take } = getPostsOptions
+
+    sort = sort || SortOption.CREATEDAT;
+    order = order || OrderOption.DESC;
+    page = page || 1;
+    take = take || 1;
+
+    const qb = await this.postRepository
+      .createQueryBuilder('post')
+      .select([
+        'post.id',
+        'post.title',
+        'post.content',
+        'post.hashtagText',
+        'post.views',
+        'post.createdAt',
+        'post.updatedAt',
+      ])
+      .leftJoin('post.user', 'user')
+      .addSelect('user.email');
+
+    if (search) {
+      qb.andWhere('post.title like :title', { title: `%${search}%` })
+        .orWhere('post.content like :content', { content: `%${search}%` });
+    }
+
+    if (filter) {
+      const regexp = /[^#,]+/g;  // # , 제외하고 검색
+      const matchedArray = [ ...filter.matchAll(regexp) ]
+      const tags = matchedArray.map(e => e[0]);
+
+      qb.leftJoin('post.postHashtag', 'postHashtag')
+        .leftJoin('postHashtag.hashtag', 'hashtag')
+        .andWhere('hashtag.content IN (:...content)', { content: tags });
+    }
+
+    const posts = await qb.orderBy(`post.${sort}`, order)
+      .take(take)
+      .skip((page - 1) * take)
+      .getMany();
+
+    return posts;
   }
 
   async getPostById(id: number): Promise<Post> {

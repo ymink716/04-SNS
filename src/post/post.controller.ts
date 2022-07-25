@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Ip, Param, ParseIntPipe, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Ip, Param, ParseIntPipe, Post, Put, Query, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
@@ -14,6 +14,7 @@ import { HashtagService } from './hashtag.service';
 import { PostHashtagService } from './post-hashtag.service';
 import { PostService } from './post.service';
 import { RealIP } from 'nestjs-real-ip';
+import { orderOption, sortOption } from './dto/get-posts.dto';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -92,7 +93,18 @@ export class PostController {
 
   @AllowAny()
   @Get()
-  async getList() {
-    //const posts = await this.postService.getList();
+  async getList(
+    @Query('sort') sort: sortOption,
+    @Query('order') order: orderOption,
+    @Query('search') search: string,
+    @Query('filter') filter: string,
+    @Query('page') page: number,
+    @Query('take') take: number,
+  ) {
+    const posts = await this.postService.getList({
+      sort, order, search, filter, page, take,
+    });
+
+    return posts;
   }
 }
