@@ -125,8 +125,8 @@ JWT_EXPIRES_IN=1d
 | 게시물 수정        | PATCH  |  api/post/{postId}              |
 | 게시물 삭제        | DELETE |  api/post/{postId}        |
 | 게시물 상세 조회   | GET    | api/post/{postId}       |
-| 게시물 복구 | PATCH | api/post/{postId/restore} |
-| 좋아요 💗   | POST   |  api/post/{postId/like}    |
+| 게시물 복구 | PATCH | api/post/{postId}/restore |
+| 좋아요 💗   | POST   |  api/post/{postId}/like    |
 <br/>
 
 * 게시물 상세와 목록은 로그인한 `모든 유저`가 조회할 수 있습니다.
