@@ -55,10 +55,10 @@ export class LikeService {
   }
 
   async getCountsByPost(postId: number) {
-    const count = await this.likeRepository.createQueryBuilder()
-      .select('like')
-      .from(Like, 'like')
-      .where('like.postId = :id', { id: postId })
+    const count = await this.likeRepository
+      .createQueryBuilder('like')
+      .innerJoinAndSelect('like.post', 'post')
+      .where('post.id = :postId', { postId })
       .getCount();
 
     return count;

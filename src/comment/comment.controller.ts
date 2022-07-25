@@ -43,7 +43,7 @@ export class CommentController {
     @Param('commentId', ParseIntPipe) commentId: number,
     @GetUser() user: User,
   ) {
-    return await this.commentService.deleteComment(commentId, user);
+    await this.commentService.deleteComment(commentId, user);
   }
 
   @ApiBearerAuth('access_token')
@@ -53,6 +53,6 @@ export class CommentController {
     @Param('commentId', ParseIntPipe) commentId: number,
     @GetUser() user: User,
   ) {
-    return await this.commentService.restoreComment(commentId, user);
+    await this.commentService.restoreComment(commentId, user);
   }
 }

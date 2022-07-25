@@ -93,11 +93,22 @@ export class CommentService {
     return comment;
   }
 
-  checkIsAuthor(comment: Comment, user: User) {
+  checkIsAuthor(comment: Comment, user: User): void {
     const isAuthor = comment.user.id === user.id;
 
     if (!isAuthor) {
       throw new HttpException(ErrorType.commentForbidden.message, ErrorType.commentForbidden.code);
     }
+  }
+
+  async getCommentsByPost(postId: number): Promise<Comment[]> {
+    const comments: Comment[] = await this.commentRepository
+    .createQueryBuilder('comment')
+    .withDeleted()
+    .innerJoinAndSelect('comment.post', 'post')
+    .where('post.id = :postId', { postId })
+    .getMany();
+
+    return comments;
   }
 }

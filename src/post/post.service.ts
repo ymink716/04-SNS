@@ -2,6 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { ErrorType } from 'src/utils/error-type.enum';
+import { GetUser } from 'src/utils/get-user.decorator';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -91,11 +92,16 @@ export class PostService {
     }
   }
 
-  getOne(postId: number) {
-    throw new Error('Method not implemented.');
+  async getOne(postId: number, clientIp, postCooike) {
+    
+    const post: Post = await this.getPostById(postId);
+
+    const visited = postCooike !== undefined;
+    
+
   }
 
-  async getPostById(id: number) {
+  async getPostById(id: number): Promise<Post> {
     const post: Post = await this.postRepository.findOne({ 
       where: { id }, 
       relations: ['user'] 
