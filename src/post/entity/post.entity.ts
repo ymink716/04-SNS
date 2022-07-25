@@ -13,6 +13,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { PostHashtag } from './post-hashtag.entity';
+import { PostViewLog } from './post-view-log.entity';
 
 @Entity()
 export class Post {
@@ -70,4 +71,8 @@ export class Post {
   // 게시물 : 댓글 -> 1:n
   @OneToMany(() => Comment, comment => comment.post)
   comments: Comment[];
+
+  // 게시물 : 접속기록 -> 1:n
+  @OneToMany(() => PostViewLog, postviewLog => postviewLog.post)
+  postViewLogs: PostViewLog[];
 }

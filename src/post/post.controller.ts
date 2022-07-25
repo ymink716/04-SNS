@@ -7,11 +7,13 @@ import { LikeService } from 'src/like/like.service';
 import { User } from 'src/user/entity/user.entity';
 import { AllowAny } from 'src/utils/allow-any.decorator';
 import { GetUser } from 'src/utils/get-user.decorator';
+import { IpAddress } from 'src/utils/ip-address.decorator';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { HashtagService } from './hashtag.service';
 import { PostHashtagService } from './post-hashtag.service';
 import { PostService } from './post.service';
+import { RealIP } from 'nestjs-real-ip';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -78,25 +80,19 @@ export class PostController {
   @Get('/:postId')
   async getOne(
     @Param('postId', ParseIntPipe) postId: number,
-    @Ip() clientIp,
     @Req() req: Request,
+    @IpAddress() ipAddress,
   ) {
-    console.log(req.user);
-    console.log(typeof clientIp, clientIp);
-
-    const postCooike = req.cookies[postId];
-    console.log(typeof postCooike, postCooike);
-    
-    // const post = await this.postService.getOne(postId, clientIp, postCooike);
+    const post = await this.postService.getOne(postId, req.user, ipAddress);
     const likes = await this.likeService.getCountsByPost(postId);
     const comments = await this.commentService.getCommentsByPost(postId);
     
-    // return {post, likes, comments}
+    return {post, likes, comments}
   }
 
   @AllowAny()
   @Get()
   async getList() {
-    return
+    //const posts = await this.postService.getList();
   }
 }

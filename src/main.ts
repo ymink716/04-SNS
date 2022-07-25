@@ -4,12 +4,16 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { BaseAPIDocumentation } from './configs/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
+import * as requestIp from 'request-ip';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
 
   app.setGlobalPrefix('/api');
+
+  app.use(requestIp.mw());
   app.use(cookieParser());
+
   app.useGlobalPipes(new ValidationPipe());
 
   // Swagger API Docs

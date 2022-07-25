@@ -11,6 +11,7 @@ import {
 } from 'typeorm';
 import { Like } from 'src/like/entity/like.entity';
 import { Comment } from 'src/comment/entity/comment.entity';
+import { PostViewLog } from 'src/post/entity/post-view-log.entity';
 
 @Entity()
 export class User {
@@ -60,4 +61,8 @@ export class User {
   // 사용자 : 댓글 -> 1:n
   @OneToMany(() => Comment, comment => comment.user)
   comments: Comment[];
+
+  // 사용자 : 접속기록 -> 1:n
+  @OneToMany(() => PostViewLog, postviewLog => postviewLog.user)
+  postViewLogs: PostViewLog[];
 }

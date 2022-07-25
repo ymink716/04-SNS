@@ -2,17 +2,18 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { ErrorType } from 'src/utils/error-type.enum';
-import { GetUser } from 'src/utils/get-user.decorator';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entity/post.entity';
+import { PostViewLogService } from './post-view-log.service';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+    private readonly postViewLogservice: PostViewLogService,
   ) {}
   
   async createPost(createPostDto: CreatePostDto, user: User) {
@@ -92,13 +93,19 @@ export class PostService {
     }
   }
 
-  async getOne(postId: number, clientIp, postCooike) {
-    
+  async getOne(postId: number, user, ipAddress) {
     const post: Post = await this.getPostById(postId);
 
-    const visited = postCooike !== undefined;
+    const isVisited = await this.postViewLogservice.isVisited(postId, user, ipAddress);
+    await this.postViewLogservice.createOne(user, post, ipAddress);
     
-
+    if (isVisited) {
+      return post;
+    } else {
+      post.views = post.views + 1;
+      const updatedPost = await this.postRepository.save(post);
+      return updatedPost;
+    }
   }
 
   async getPostById(id: number): Promise<Post> {
