@@ -119,7 +119,7 @@ export class PostService {
   async getOne(postId: number, isVisited: boolean) {
     const post: Post = await this.postRepository.findOne({ 
       where: { id: postId }, 
-      relations: ['user', 'comments'] 
+      relations: ['user'], 
     });
 
     if (!post) {
@@ -141,28 +141,34 @@ export class PostService {
     }
   }
 
-  async getList(GetPostsDto: GetPostsDto) {
-    const { search, filter } = GetPostsDto;
-    let { sort, order, page, take } = GetPostsDto;
-
+  async getList(getPostsDto: GetPostsDto) {
+    const { search, filter } = getPostsDto;
+    let { sort, order, page, take } = getPostsDto;
+    
     sort = sort || SortOption.CREATEDAT;
     order = order || OrderOption.DESC;
     page = page || 1;
     take = take || 1;
 
-    const qb = await this.postRepository
+    try {
+      const qb = await this.postRepository
       .createQueryBuilder('post')
       .select([
         'post.id',
         'post.title',
         'post.content',
-        'post.hashtagText',
+        'post.hashtagsText',
         'post.views',
+        'post.likeCount',
         'post.createdAt',
         'post.updatedAt',
       ])
       .leftJoin('post.user', 'user')
-      .addSelect('user.email');
+      .addSelect([
+        'user.id',
+        'user.email',
+        'user.nickname',
+      ]);
 
     if (search) {
       qb.andWhere('post.title like :title', { title: `%${search}%` })
@@ -173,10 +179,10 @@ export class PostService {
       const regexp = /[^#,]+/g;  // # , 제외하고 검색
       const matchedArray = [ ...filter.matchAll(regexp) ]
       const tags = matchedArray.map(e => e[0]);
-
-      qb.leftJoin('post.postHashtag', 'postHashtag')
-        .leftJoin('postHashtag.hashtag', 'hashtag')
-        .andWhere('hashtag.content IN (:...content)', { content: tags });
+      console.log(tags);
+      qb.leftJoin('post.postHashtags', 'postHashtags')
+        .leftJoin('postHashtags.hashtag', 'hashtag')
+        .andWhere('hashtag.content IN (:...tags)', { tags });
     }
 
     const posts = await qb.orderBy(`post.${sort}`, order)
@@ -185,6 +191,10 @@ export class PostService {
       .getMany();
 
     return posts;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
+    }
   }
 
   async getPostById(id: number): Promise<Post> {

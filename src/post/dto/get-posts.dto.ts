@@ -4,7 +4,7 @@ import { IsEnum, Max, Min } from "class-validator";
 export enum SortOption {
   CREATEDAT = 'createdAt',
   VIEWS = 'views',
-  likes = 'likes',
+  LIKECOUNT = 'likeCount',
 }
 
 export enum OrderOption {
