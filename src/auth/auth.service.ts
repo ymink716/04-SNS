@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { User } from 'src/user/entity/user.entity';
-import { ErrorType } from 'src/utils/error-type.enum';
+import { ErrorType } from 'src/common/type/error-type.enum';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcryptjs';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -16,7 +16,7 @@ export class AuthService {
   ) {}
 
   /**
-   * @description 새로운 사용자를 생성하고 반환합니다.
+   * @description 새로운 사용자를 생성합니다.
   */
   async register(createUserDto: CreateUserDto): Promise<User> {
     const { email, password, nickname } = createUserDto;

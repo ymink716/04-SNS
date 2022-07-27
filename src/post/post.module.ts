@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommentService } from 'src/comment/comment.service';
 import { Comment } from 'src/comment/entity/comment.entity';
-import { Like } from 'src/like/entity/like.entity';
-import { LikeService } from 'src/like/like.service';
 import { Hashtag } from './entity/hashtag.entity';
 import { PostHashtag } from './entity/post-hashtag.entity';
 import { PostViewLog } from './entity/post-view-log.entity';
@@ -19,18 +17,16 @@ import { PostService } from './post.service';
     Post, 
     Hashtag, 
     PostHashtag, 
-    Like, 
-    Comment,
     PostViewLog, 
+    Comment,
   ])],
   controllers: [PostController],
   providers: [
     PostService, 
     HashtagService, 
     PostHashtagService, 
-    LikeService, 
-    CommentService,
     PostViewLogService,
+    CommentService,
   ],
   exports: [PostService]
 })

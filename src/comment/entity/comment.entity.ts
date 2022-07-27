@@ -7,7 +7,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   CreateDateColumn,
-  DeleteDateColumn,
   ManyToOne,
 } from 'typeorm';
 
@@ -36,12 +35,8 @@ export class Comment {
   })
   updatedAt: Date;
 
-  @ApiProperty({ description: '삭제일' })
-  @DeleteDateColumn({ type: 'timestamp', nullable: true })
-  deletedAt: Date;
-
   // 댓글 : 사용자 -> n:1
-  @ApiProperty()
+  @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.comments, {
     onDelete: 'CASCADE',
     nullable: false
@@ -49,7 +44,7 @@ export class Comment {
   user: User;
 
   // 댓글 : 게시물 -> n:1
-  @ApiProperty()
+  @ApiProperty({ type: () => Post })
   @ManyToOne(() => Post, post => post.comments, {
     onDelete: 'CASCADE',
     nullable: false

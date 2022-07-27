@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from 'src/post/entity/post.entity';
 import { PostService } from 'src/post/post.service';
 import { User } from 'src/user/entity/user.entity';
-import { ErrorType } from 'src/utils/error-type.enum';
+import { ErrorType } from 'src/common/type/error-type.enum';
 import { Repository } from 'typeorm';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -49,35 +49,9 @@ export class CommentService {
     const comment = await this.getCommentById(commentId);
     this.checkIsAuthor(comment, user);
 
-    const result = await this.commentRepository.softDelete({ id: commentId });
+    const result = await this.commentRepository.delete({ id: commentId });
     
     return result;
-  }
-
-  async restoreComment(commentId: number, user: User) {
-    const comment: Comment = await this.commentRepository
-      .createQueryBuilder('comment')
-      .withDeleted()
-      .innerJoinAndSelect('comment.user', 'user')
-      .where('user.id = :userId', { userId: user.id })
-      .andWhere('comment.id = :commentId', { commentId })
-      .getOne();
-    
-    if (!comment) {
-      throw new HttpException(ErrorType.commnetNotFound.message, ErrorType.commnetNotFound.code);
-    }
-
-    if (comment.deletedAt === null) {
-      throw new HttpException(ErrorType.commentNotDeleted.message, ErrorType.commentNotDeleted.code);
-    }
-
-    try {
-      comment.deletedAt = null;
-      await this.commentRepository.save(comment);
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
-    }
   }
 
   async getCommentById(commentId: number): Promise<Comment> {
@@ -93,6 +67,9 @@ export class CommentService {
     return comment;
   }
 
+  /**
+   * @description 댓글 작성자인지 확인
+  */
   checkIsAuthor(comment: Comment, user: User): void {
     const isAuthor = comment.user.id === user.id;
 
@@ -104,8 +81,8 @@ export class CommentService {
   async getCommentsByPost(postId: number): Promise<Comment[]> {
     const comments: Comment[] = await this.commentRepository
     .createQueryBuilder('comment')
-    .withDeleted()
-    .innerJoinAndSelect('comment.post', 'post')
+    .innerJoin('comment.post', 'post')
+    .innerJoinAndSelect('commnet.user', 'user')
     .where('post.id = :postId', { postId })
     .getMany();
 

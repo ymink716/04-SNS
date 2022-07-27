@@ -37,6 +37,10 @@ export class Post {
   @Column({ type: 'integer', default: 0 })
   views: number;
 
+  @ApiProperty({ description: '좋아요 수', example: 0 })
+  @Column({ type: 'integer', default: 0 })
+  likeCount: number;
+
   @ApiProperty({ description: '생성일' })
   @CreateDateColumn({
     type: 'timestamp',

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreatePostDto } from './dto/create-post.dto';
 import { Hashtag } from './entity/hashtag.entity';
 import { PostHashtag } from './entity/post-hashtag.entity';
 import { Post } from './entity/post.entity';
@@ -13,6 +12,10 @@ export class PostHashtagService {
     private readonly postHashtagRepository: Repository<PostHashtag>,
   ) {}
 
+  /**
+   * @description 게시물-해시태그 관계 설정
+   * - 해시태그 리스트와 해당 게시물을 받아 관계를 생성합니다.
+  */
   async createPostHashtags(hashtagList: Hashtag[], post: Post) {
     for (const hashtag of hashtagList) {
       const postHashtag = this.postHashtagRepository.create({
@@ -24,8 +27,16 @@ export class PostHashtagService {
     }
   }
 
+  /**
+   * @description 게시물-해시태그 관계 해제
+   * - 게시물에 해당하는 해시태그 관계를 해제합니다.
+  */
   async deletePostHashtagByPost(post: Post) {
-    const result = await this.postHashtagRepository.delete({ post });
-    console.log(result);
+    await this.postHashtagRepository
+      .createQueryBuilder('postHashtag')
+      .innerJoinAndSelect('postHashtag.post', 'post')
+      .where('post.id = :postId', { postId: post.id })
+      .delete()
+      .execute();
   }
 }

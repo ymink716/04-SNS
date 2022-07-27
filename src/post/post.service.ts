@@ -1,22 +1,23 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
-import { ErrorType } from 'src/utils/error-type.enum';
+import { ErrorType } from 'src/common/type/error-type.enum';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
-import { GetPostsOptions, OrderOption, SortOption } from './dto/get-posts.dto';
+import { GetPostsDto, OrderOption, SortOption } from './dto/get-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entity/post.entity';
-import { PostViewLogService } from './post-view-log.service';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
-    private readonly postViewLogservice: PostViewLogService,
   ) {}
   
+  /**
+   * @description 게시물 생성에 관한 비지니스 로직
+  */
   async createPost(createPostDto: CreatePostDto, user: User) {
     const { title, content, hashtags } = createPostDto;
     
@@ -37,14 +38,15 @@ export class PostService {
     }
   }
 
+  /**
+   * @description 게시물 수정에 관한 비지니스 로직
+   * - 인증된 사용자가 해당 게시물의 작성자인지 확인한 뒤 게시물 업데이트
+  */
   async updatePost(id: number, updatepostDto: UpdatePostDto, user: User) {    
     const { title, content, hashtags } = updatepostDto;
-
-    const post: Post = await this.getPostById(id);
     
-    if (user.id !== post.user.id) {
-      throw new HttpException(ErrorType.postForbidden.message, ErrorType.postForbidden.code);
-    }
+    const post: Post = await this.getPostById(id);
+    this.checkAuthor(user, post);
 
     try {
       post.title = title;
@@ -59,16 +61,31 @@ export class PostService {
     }
   }
 
+  /**
+   * @description 게시물 삭제에 관한 비지니스 로직
+   * - 인증된 사용자가 해당 게시물의 작성자인지 확인한 뒤 게시물 삭제 (soft delete)
+  */
   async deletePost(postId: number, user: User) {
     const post: Post = await this.getPostById(postId);
-    
-    if (user.id !== post.user.id) {
-      throw new HttpException(ErrorType.postForbidden.message, ErrorType.postForbidden.code);
-    }
-
+    this.checkAuthor(user, post);
     await this.postRepository.softDelete({ id: postId });
   }
 
+  /**
+   * @description 현재 접속 중인 사용자가 해당 게시물의 작성자인지 확인
+  */
+  checkAuthor(user: User, post: Post) {
+    const isNotAuthor = user.id !== post.user.id;
+
+    if (isNotAuthor) {
+      throw new HttpException(ErrorType.postForbidden.message, ErrorType.postForbidden.code);
+    }
+  }
+
+  /**
+   * @description 게시물 복구에 관한 비지니스 로직
+   * - 인증된 사용자가 해당 게시물의 작성자인지 확인한 뒤 게시물 복구
+  */
   async restorePost(postId: number, user: User) {
     const post: Post = await this.postRepository
       .createQueryBuilder('post')
@@ -81,7 +98,8 @@ export class PostService {
     if (!post) {
       throw new HttpException(ErrorType.postNotFound.message, ErrorType.postNotFound.code);
     }
-    if (post.deletedAt === null) {
+    const isNotDeletedPost = post.deletedAt === null;
+    if (isNotDeletedPost) {
       throw new HttpException(ErrorType.postNotDeleted.message, ErrorType.postNotDeleted.code);
     }
 
@@ -94,24 +112,38 @@ export class PostService {
     }
   }
 
-  async getOne(postId: number, user, ipAddress) {
-    const post: Post = await this.getPostById(postId);
+  /**
+   * @description 게시물 상세보기에 관한 비지니스 로직
+   * - 방문한 적이 없는 게시물이라면 조회수 +1 하여 업데이트
+  */
+  async getOne(postId: number, isVisited: boolean) {
+    const post: Post = await this.postRepository.findOne({ 
+      where: { id: postId }, 
+      relations: ['user', 'comments'] 
+    });
 
-    const isVisited = await this.postViewLogservice.isVisited(postId, user, ipAddress);
-    await this.postViewLogservice.createOne(user, post, ipAddress);
+    if (!post) {
+      throw new HttpException(ErrorType.postNotFound.message, ErrorType.postNotFound.code);
+    }
     
     if (isVisited) {
       return post;
-    } else {
+    }
+
+    try {
       post.views = post.views + 1;
       const updatedPost = await this.postRepository.save(post);
+      
       return updatedPost;
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
     }
   }
 
-  async getList(getPostsOptions: GetPostsOptions) {
-    const { search, filter } = getPostsOptions;
-    let { sort, order, page, take } = getPostsOptions
+  async getList(GetPostsDto: GetPostsDto) {
+    const { search, filter } = GetPostsDto;
+    let { sort, order, page, take } = GetPostsDto;
 
     sort = sort || SortOption.CREATEDAT;
     order = order || OrderOption.DESC;
@@ -166,5 +198,12 @@ export class PostService {
     }
 
     return post;
+  }
+
+  async updateLikeCount(postId: number, n: number) {
+    const post: Post = await this.getPostById(postId);
+    post.likeCount = post.likeCount + n;
+
+    await this.postRepository.save(post);
   }
 }

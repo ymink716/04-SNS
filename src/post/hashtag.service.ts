@@ -10,6 +10,10 @@ export class HashtagService {
     private readonly hashtagRepository: Repository<Hashtag>,
   ) {}
 
+  /**
+   * @description 해시태그 리스트를 생성합니다.
+   * - 텍스트 형태의 해시태그 리스트를 받아 태그만 남겨 hashtag 테이블에 저장
+  */
   async createHashtagList(hashtags: string): Promise<Hashtag[]> {
     const tags = this.splitHashtags(hashtags);
 
@@ -28,10 +32,10 @@ export class HashtagService {
     return hashtagList;
   }
 
-  async updateHashtagList(hashtags: string) {
-    throw new Error('Method not implemented.');
-  }
-
+  /**
+   * @description 텍스트 형태의 해시태그를 분할합니다.
+   * - #서울,#맛집 => ['서울', '맛집']
+  */
   splitHashtags(hashtags: string): string[] {
     const regexp = /[^#,]+/g;  // # , 제외하고 검색
     const matchedArray = [ ...hashtags.matchAll(regexp) ]

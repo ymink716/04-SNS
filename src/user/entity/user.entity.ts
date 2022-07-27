@@ -1,6 +1,6 @@
 import { Post } from 'src/post/entity/post.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { classToPlain, Exclude, instanceToPlain } from 'class-transformer';
 import {
   Column,
   Entity,
@@ -12,14 +12,16 @@ import {
 import { Like } from 'src/like/entity/like.entity';
 import { Comment } from 'src/comment/entity/comment.entity';
 import { PostViewLog } from 'src/post/entity/post-view-log.entity';
+import { IsEmail } from 'class-validator';
 
 @Entity()
 export class User {
-  @ApiProperty()
+  @ApiProperty({ description: 'User ID', example: 1 })
   @PrimaryGeneratedColumn('increment')
   id: number;
 
   @ApiProperty({ description: '이메일', example: 'test@mail.com' })
+  @IsEmail()
   @Column({ unique: true })
   email: string;
 
@@ -65,4 +67,8 @@ export class User {
   // 사용자 : 접속기록 -> 1:n
   @OneToMany(() => PostViewLog, postviewLog => postviewLog.user)
   postViewLogs: PostViewLog[];
+
+  toJSON() {
+    return instanceToPlain(this);
+  }
 }
