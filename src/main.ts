@@ -1,6 +1,6 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import { BaseAPIDocumentation } from './common/config/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
@@ -14,10 +14,12 @@ async function bootstrap() {
   app.use(requestIp.mw());
   app.use(cookieParser());
 
-  app.useGlobalPipes(new ValidationPipe());
-
-  //app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
-
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,  // mapping class로 변환 허용
+    transformOptions: {
+      enableImplicitConversion: true  // 암묵적으로 타입을 변환
+    }
+  }));
 
   // Swagger API Docs
   const documentOptions = new BaseAPIDocumentation().initializeOptions();

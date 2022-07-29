@@ -9,11 +9,10 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { HashtagService } from './hashtag.service';
 import { PostHashtagService } from './post-hashtag.service';
 import { PostService } from './post.service';
-import { OrderOption, SortOption } from './dto/get-posts.dto';
+import { GetPostsDto, OrderOption, SortOption } from './dto/get-posts.dto';
 import { PostViewLogService } from './post-view-log.service';
 import { PostResponse, PostResponseData, PostDetailResponseData, PostListResponseData } from './dto/post-response';
 import { ResponseType } from 'src/common/type/response-type.enum';
-import { PostFilterDto } from './dto/post-filter.dto';
 import { CommentService } from 'src/comment/comment.service';
 
 @ApiTags('posts')
@@ -128,7 +127,8 @@ export class PostController {
 
   /**
    * @description 게시물 상세보기 API
-   * - 사용자와 Ip로 게시물 방문 기록을 확인한 후 방문한 적이 없다면 게시물의 조회수를 +1 합니다.
+   * - 사용자와 Ip로 게시물 방문 기록을 확인한 후 
+   * - 방문한 적이 없다면 게시물의 조회수를 +1 합니다.
    * - 해당 게시물에 댓글 리스트를 가져오고, 게시물과 댓글 리스트를 리턴합니다.
   */
   @AllowAny()
@@ -156,30 +156,27 @@ export class PostController {
 
   /**
    * @description 게시물 리스트 API
-   * - 
+   * - 해당 조건들로 게시물을 검색하여 게시물 리스트를 리턴합니다.
+   * - sort: 정렬 조건 (생성일, 좋아요수, 조회수)
+   * - order: 차순 (오름차순, 내림차순)
+   * - search: 검색어 (게시물 제목과 내용을 검색합니다.)
+   * - filter: 해시태그를 필터링합니다.
+   * - page: 검색할 페이지를 설정합니다.
+   * - take: 몇 건의 게시물을 가져올지 설정합니다.
+   * - 각 조건은 각각, 동시에 적용될 수 있습니다.
   */
   @AllowAny()
   @ApiOperation({ summary: '게시물 리스트 ', description: '게시물 리스트 API '})
   @ApiOkResponse({ description: ResponseType.getList.message, type: PostListResponseData })
-  @ApiQuery({ name: 'sort', enum: SortOption, required: false, description: '정렬 기준', example: 'createdAt' })
-  @ApiQuery({ name: 'order', enum: OrderOption, required: false, description: '차순', example: 'DESC' })
-  @ApiQuery({ name: 'search', required: false, description: '검색어', example: '서울' })
-  @ApiQuery({ name: 'filter', required: false, description: '해시태그 필터링', example: '#서울,#맛집' })
-  @ApiQuery({ name: 'page', required: false, description: '페이지', example: 1 })
-  @ApiQuery({ name: 'take', required: false, description: '개수', example: 10 })
+  @ApiQuery({ name: 'sort', enum: SortOption, required: false, description: '정렬 기준', example: 'createdAt', allowEmptyValue: true })
+  @ApiQuery({ name: 'order', enum: OrderOption, required: false, description: '차순', example: 'DESC', allowEmptyValue: true })
+  @ApiQuery({ name: 'search', required: false, description: '검색어', example: '서울', allowEmptyValue: true })
+  @ApiQuery({ name: 'filter', required: false, description: '해시태그 필터링', example: '#서울,#맛집', allowEmptyValue: true })
+  @ApiQuery({ name: 'page', required: false, description: '페이지', example: 1, allowEmptyValue: true })
+  @ApiQuery({ name: 'take', required: false, description: '개수', example: 10, allowEmptyValue: true })
   @Get()
-  async getList(
-    @Query('sort') sort: SortOption,
-    @Query('order') order: OrderOption,
-    @Query('search') search: string,
-    @Query('filter') filter: string,
-    @Query('page') page: number,
-    @Query('take') take: number,
-  ) {
-    
-    const posts = await this.postService.getList({
-      sort, order, search, filter, page, take,
-    });
+  async getList(@Query() getPostDto: GetPostsDto) {
+    const posts = await this.postService.getList(getPostDto);
 
     return PostResponse.response(
       ResponseType.getList.code,

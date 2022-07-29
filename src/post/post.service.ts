@@ -141,6 +141,14 @@ export class PostService {
     }
   }
 
+  /**
+   * @description 게시물 검색에 관한 비지니스 로직
+   * - 정렬조건, 차순, 페이지, 개수가 없으면 기본값으로 설정
+   * - 검색어(search)가 존재한다면 제목과 내용에서 찾음
+   * - 해시태그필터링(filter)가 존재한다면 tag를 추출한 후
+   * - 해시태그 테이블과 조인하여 검색
+   * - 정렬(sort, orderBy), 페이징(page, take)처리하여 리턴  
+  */
   async getList(getPostsDto: GetPostsDto) {
     const { search, filter } = getPostsDto;
     let { sort, order, page, take } = getPostsDto;
@@ -148,7 +156,7 @@ export class PostService {
     sort = sort || SortOption.CREATEDAT;
     order = order || OrderOption.DESC;
     page = page || 1;
-    take = take || 1;
+    take = take || 10;
 
     try {
       const qb = await this.postRepository
@@ -210,6 +218,9 @@ export class PostService {
     return post;
   }
 
+  /**
+   * @description 게시물에 좋아요를 하거나 취소할 경우 좋아요 수를 업데이트합니다. 
+  */
   async updateLikeCount(postId: number, n: number) {
     const post: Post = await this.getPostById(postId);
     post.likeCount = post.likeCount + n;
