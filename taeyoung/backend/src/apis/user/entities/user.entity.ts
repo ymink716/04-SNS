@@ -39,7 +39,7 @@ export class User {
 
   // 생성(create) 전에 비밀번호 해싱
   @BeforeInsert()
-  async hashPassword() {
+  async hashPassword?() {
     try {
       this.password = await bcrypt.hash(this.password, 10);
     } catch (e) {
