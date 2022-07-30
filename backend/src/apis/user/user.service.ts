@@ -15,12 +15,6 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async fetch({ email }): Promise<User> {
-    return await this.userRepository.findOne({
-      where: { email },
-    });
-  }
-
   async signup({ createUserInput }): Promise<User> {
     const { email, password, passwordConfirm } = createUserInput;
     const isExist = await this.fetch({ email });
@@ -40,5 +34,11 @@ export class UserService {
 
     delete result.password;
     return result;
+  }
+
+  async fetch({ email }): Promise<User> {
+    return await this.userRepository.findOne({
+      where: { email },
+    });
   }
 }

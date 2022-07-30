@@ -50,6 +50,13 @@ describe('FeedService', () => {
   let userRepository: MockRepository<User>;
   let feedLikeRepository: MockRepository<FeedLike>;
   let dataSource: DataSource;
+  let user: User;
+  let currentUser: ICurrentUser;
+  let feedId;
+  let feed: Feed;
+  let createFeedInput: CreateFeedInput;
+  let updateFeedInput: UpdateFeedInput;
+  let fetchFeedsOutput: FetchFeedsOutput;
 
   const qr = {
     manager: {},
@@ -101,21 +108,7 @@ describe('FeedService', () => {
     ) as MockRepository<FeedLike>;
     userRepository = module.get('UserRepository') as MockRepository<User>;
     dataSource = module.get<DataSource>(DataSource);
-  });
 
-  it('피드,유저 서비스 toBeDefined 테스트', () => {
-    expect(feedService).toBeDefined();
-    expect(userService).toBeDefined();
-  });
-
-  let user: User;
-  let currentUser: ICurrentUser;
-  let feedId;
-  let feed: Feed;
-  let createFeedInput: CreateFeedInput;
-  let updateFeedInput: UpdateFeedInput;
-  let fetchFeedsOutput: FetchFeedsOutput;
-  beforeEach(async () => {
     feedId = 1;
     createFeedInput = {
       title: '여행가고 싶은 날이네요',
@@ -171,6 +164,11 @@ describe('FeedService', () => {
     };
     user.posts = [feed];
     jest.spyOn(userService, 'fetch').mockResolvedValue(user);
+  });
+
+  it('피드 서비스 toBeDefined 테스트', () => {
+    expect(feedService).toBeDefined();
+    expect(userService).toBeDefined();
   });
 
   describe('게시글 생성', () => {
