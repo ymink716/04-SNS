@@ -1,7 +1,6 @@
 import {
   ForbiddenException,
   Injectable,
-  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
@@ -161,9 +160,6 @@ export class FeedService {
 
         likeStatus = false;
       }
-
-      if (likeStatus === null)
-        throw new NotAcceptableException(ErrorType.feed.failLike.msg);
 
       await queryRunner.manager.save(updateLike);
       await queryRunner.manager.save(updateFeed);

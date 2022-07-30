@@ -7,7 +7,11 @@ import { ICurrentUser } from 'src/common/auth/currentUser';
 import { ErrorType } from 'src/common/type/error.type';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { CreateFeedInput } from '../dto/createFeed.input';
-import { OrderOption, SortOption } from '../dto/fetchFeed.options';
+import {
+  FetchFeedOptions,
+  OrderOption,
+  SortOption,
+} from '../dto/fetchFeed.options';
 import { FetchFeedsOutput } from '../dto/fetchFeed.output';
 import { UpdateFeedInput } from '../dto/updateFeed.input';
 import { Feed } from '../entities/feed.entity';
@@ -127,7 +131,7 @@ describe('FeedService', () => {
       feeds: [feed],
       order: OrderOption.ASC,
       sort: SortOption.CREATEDAT,
-      filter: ['날씨', '좋음'],
+      filter: ['#날씨', '#좋음'],
       page: 1,
       pageCount: 10,
       search: '여행',
@@ -294,47 +298,65 @@ describe('FeedService', () => {
   });
 
   describe('게시글 좋아요', () => {
-    it('toBeDefined 테스트', () => {
-      expect(feedService.like).toBeDefined();
-    });
-    it('결과값 검증 : 좋아요 상태가 true일 경우', async () => {
-      const queryRunner = dataSource.createQueryRunner();
-      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
+    let queryRunner;
+    let feedLike: FeedLike;
 
+    let qbSpyOnLeftJoin;
+    let qbSpyOnWhere;
+    let qbSpyOnAndWhere;
+    let qbSpyOnGetOne;
+
+    let qrSpyOnSave;
+    let qrSpyOnFindOne;
+    let qrSpyOnCommit;
+    let qrSpyOnRollback;
+    let qrSpyOnRelease;
+
+    beforeEach(() => {
+      queryRunner = dataSource.createQueryRunner();
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(user);
       jest.spyOn(queryRunner.manager, 'findOne').mockResolvedValue(feed);
-      const feedLike: FeedLike = { feed, id: '1', isLike: true, user };
-      jest
-        .spyOn(feedLikeRepository.createQueryBuilder(), 'getOne')
-        .mockResolvedValue(feedLike);
-      const qbSpyOnLeftJoin = jest.spyOn(
+
+      qbSpyOnLeftJoin = jest.spyOn(
         feedLikeRepository.createQueryBuilder(),
         'leftJoin',
       );
-      const qbSpyOnWhere = jest.spyOn(
+      qbSpyOnWhere = jest.spyOn(
         feedLikeRepository.createQueryBuilder(),
         'where',
       );
-      const qbSpyOnAndWhere = jest.spyOn(
+      qbSpyOnAndWhere = jest.spyOn(
         feedLikeRepository.createQueryBuilder(),
         'andWhere',
       );
-      const qbSpyOnGetOne = jest.spyOn(
+      qbSpyOnGetOne = jest.spyOn(
         feedLikeRepository.createQueryBuilder(),
         'getOne',
       );
 
-      const qrSpyOnFindOne = jest.spyOn(queryRunner.manager, 'findOne');
-      const qrSpyOnSave = jest.spyOn(queryRunner.manager, 'save');
-      qrSpyOnSave.mockResolvedValueOnce(feedLike);
-      qrSpyOnSave.mockResolvedValueOnce(feed);
+      qrSpyOnFindOne = jest.spyOn(queryRunner.manager, 'findOne');
+      qrSpyOnSave = jest.spyOn(queryRunner.manager, 'save');
+      qrSpyOnCommit = jest.spyOn(queryRunner, 'commitTransaction');
+      qrSpyOnRollback = jest.spyOn(queryRunner, 'rollbackTransaction');
+      qrSpyOnRelease = jest.spyOn(queryRunner, 'release');
+    });
+
+    it('toBeDefined 테스트', () => {
+      expect(feedService.like).toBeDefined();
+    });
+    it('결과값 검증 : 피드와 유저간의 좋아요 관계가 형성되어있지 않은 경우', async () => {
+      jest
+        .spyOn(feedLikeRepository.createQueryBuilder(), 'getOne')
+        .mockResolvedValue(undefined);
+
+      feedLike = { feed, id: '1', isLike: true, user };
+
+      jest.spyOn(feedRepository, 'create').mockResolvedValue(feed);
       jest.spyOn(feedLikeRepository, 'create').mockResolvedValue(feedLike);
 
-      const qrSpyOnCommit = jest.spyOn(queryRunner, 'commitTransaction');
-      const qrSpyOnRollback = jest.spyOn(queryRunner, 'rollbackTransaction');
-      const qrSpyOnRelease = jest.spyOn(queryRunner, 'release');
       const result = await feedService.like({ currentUser, feedId });
 
-      expect(result).toEqual(false);
+      expect(result).toEqual(true);
 
       expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(2);
       expect(qbSpyOnWhere).toHaveBeenCalledTimes(1);
@@ -346,17 +368,223 @@ describe('FeedService', () => {
       expect(qrSpyOnRollback).toHaveBeenCalledTimes(0);
       expect(qrSpyOnRelease).toHaveBeenCalledTimes(1);
     });
+
+    it('결과값 검증 : 피드와 유저간의 좋아요 관계가 형성되어있지 않은 경우', async () => {
+      feedLike = { feed, id: '1', isLike: false, user };
+
+      jest
+        .spyOn(feedLikeRepository.createQueryBuilder(), 'getOne')
+        .mockResolvedValue(feedLike);
+
+      jest.spyOn(feedRepository, 'create').mockResolvedValue(feed);
+      jest.spyOn(feedLikeRepository, 'create').mockResolvedValue(feedLike);
+
+      const result = await feedService.like({ currentUser, feedId });
+
+      expect(result).toEqual(true);
+
+      expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(2);
+      expect(qbSpyOnWhere).toHaveBeenCalledTimes(1);
+      expect(qbSpyOnAndWhere).toHaveBeenCalledTimes(1);
+      expect(qbSpyOnGetOne).toHaveBeenCalledTimes(1);
+      expect(qrSpyOnFindOne).toHaveBeenCalledTimes(1);
+      expect(qrSpyOnSave).toHaveBeenCalledTimes(2);
+      expect(qrSpyOnCommit).toHaveBeenCalledTimes(2);
+      expect(qrSpyOnRollback).toHaveBeenCalledTimes(0);
+      expect(qrSpyOnRelease).toHaveBeenCalledTimes(2);
+    });
+
+    it('결과값 검증 : 좋아요 상태가 true일 경우 좋아요 취소', async () => {
+      feedLike = { feed, id: '1', isLike: true, user };
+      jest
+        .spyOn(feedLikeRepository.createQueryBuilder(), 'getOne')
+        .mockResolvedValue(feedLike);
+
+      jest.spyOn(feedRepository, 'create').mockResolvedValue(feed);
+      jest.spyOn(feedLikeRepository, 'create').mockResolvedValue(feedLike);
+
+      const result = await feedService.like({ currentUser, feedId });
+
+      expect(result).toEqual(false);
+
+      expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(2);
+      expect(qbSpyOnWhere).toHaveBeenCalledTimes(1);
+      expect(qbSpyOnAndWhere).toHaveBeenCalledTimes(1);
+      expect(qbSpyOnGetOne).toHaveBeenCalledTimes(1);
+      expect(qrSpyOnFindOne).toHaveBeenCalledTimes(1);
+      expect(qrSpyOnSave).toHaveBeenCalledTimes(2);
+      expect(qrSpyOnCommit).toHaveBeenCalledTimes(3);
+      expect(qrSpyOnRollback).toHaveBeenCalledTimes(0);
+      expect(qrSpyOnRelease).toHaveBeenCalledTimes(3);
+    });
+
+    it('에러 테스트 : 피드가 조회되지 않을 경우 에러', async () => {
+      try {
+        jest.spyOn(queryRunner.manager, 'findOne').mockResolvedValue(undefined);
+        await feedService.like({ currentUser, feedId });
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect(e.message).toBe(ErrorType.feed.notFound.msg);
+
+        expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(0);
+        expect(qbSpyOnWhere).toHaveBeenCalledTimes(0);
+        expect(qbSpyOnAndWhere).toHaveBeenCalledTimes(0);
+        expect(qbSpyOnGetOne).toHaveBeenCalledTimes(0);
+        expect(qrSpyOnFindOne).toHaveBeenCalledTimes(1);
+        expect(qrSpyOnSave).toHaveBeenCalledTimes(0);
+        expect(qrSpyOnCommit).toHaveBeenCalledTimes(3);
+        expect(qrSpyOnRollback).toHaveBeenCalledTimes(1);
+        expect(qrSpyOnRelease).toHaveBeenCalledTimes(4);
+      }
+    });
   });
 
   describe('게시글 상세조회', () => {
     it('toBeDefined 테스트', () => {
       expect(feedService.findOne).toBeDefined();
     });
+
+    it('결과값 검증', async () => {
+      jest
+        .spyOn(feedRepository.createQueryBuilder(), 'getOne')
+        .mockResolvedValue(feed);
+
+      const result = await feedService.findOne({ feedId });
+      expect(result).toEqual(feed);
+    });
+    it('에러 테스트 : 피드가 조회되지 않을 경우 에러', async () => {
+      try {
+        jest
+          .spyOn(feedRepository.createQueryBuilder(), 'getOne')
+          .mockResolvedValue(undefined);
+        await feedService.findOne({ feedId });
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect(e.message).toBe(ErrorType.feed.notFound.msg);
+      }
+    });
   });
 
   describe('게시글 목록조회', () => {
+    let qbSpyOnLeftJoin;
+    let qbSpyOnAddSelect;
+    let qbSpyOnAndWhere;
+    let qbSpyOnOrderBy;
+    let qbSpyOnTake;
+    let qbSpyOnSkip;
+    let qbSpyOnGetManyAndCount;
+    let fetchFeedOptions: FetchFeedOptions;
+    let qbResult;
+    beforeEach(() => {
+      fetchFeedOptions = {
+        order: OrderOption.ASC,
+        sort: SortOption.CREATEDAT,
+        filter: '날씨,좋음',
+        page: 1,
+        pageCount: 10,
+        search: '여행',
+      };
+
+      qbResult = [[feed], 1];
+
+      qbSpyOnLeftJoin = jest.spyOn(
+        feedRepository.createQueryBuilder(),
+        'leftJoin',
+      );
+
+      qbSpyOnAddSelect = jest.spyOn(
+        feedRepository.createQueryBuilder(),
+        'addSelect',
+      );
+      qbSpyOnAndWhere = jest.spyOn(
+        feedRepository.createQueryBuilder(),
+        'andWhere',
+      );
+      qbSpyOnOrderBy = jest.spyOn(
+        feedRepository.createQueryBuilder(),
+        'orderBy',
+      );
+      qbSpyOnTake = jest.spyOn(feedRepository.createQueryBuilder(), 'take');
+      qbSpyOnSkip = jest.spyOn(feedRepository.createQueryBuilder(), 'skip');
+      qbSpyOnGetManyAndCount = jest.spyOn(
+        feedRepository.createQueryBuilder(),
+        'getManyAndCount',
+      );
+    });
+
     it('toBeDefined 테스트', () => {
       expect(feedService.findList).toBeDefined();
+    });
+
+    it('결과값 검증', async () => {
+      const qbResult = [[feed], 1];
+      qbSpyOnGetManyAndCount.mockResolvedValue(qbResult);
+
+      const result = await feedService.findList({ ...fetchFeedOptions });
+      expect(result).toEqual(fetchFeedsOutput);
+    });
+
+    describe('쿼리빌더 콜타임 카운팅', () => {
+      it('옵션 모두 입력시', async () => {
+        qbSpyOnGetManyAndCount.mockResolvedValue(qbResult);
+
+        await feedService.findList({ ...fetchFeedOptions });
+
+        expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAddSelect).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAndWhere).toHaveBeenCalledTimes(2);
+        expect(qbSpyOnOrderBy).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnTake).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnSkip).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnGetManyAndCount).toHaveBeenCalledTimes(1);
+      });
+      it('filter 미입력시', async () => {
+        qbSpyOnGetManyAndCount.mockResolvedValue(qbResult);
+
+        delete fetchFeedOptions.filter;
+
+        await feedService.findList({ ...fetchFeedOptions });
+
+        expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAddSelect).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAndWhere).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnOrderBy).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnTake).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnSkip).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnGetManyAndCount).toHaveBeenCalledTimes(1);
+      });
+
+      it('search 미입력시', async () => {
+        qbSpyOnGetManyAndCount.mockResolvedValue(qbResult);
+
+        delete fetchFeedOptions.search;
+
+        await feedService.findList({ ...fetchFeedOptions });
+
+        expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAddSelect).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAndWhere).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnOrderBy).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnTake).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnSkip).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnGetManyAndCount).toHaveBeenCalledTimes(1);
+      });
+
+      it('검색 옵션을 모두 미입력시', async () => {
+        qbSpyOnGetManyAndCount.mockResolvedValue(qbResult);
+
+        fetchFeedOptions = {};
+
+        await feedService.findList({ ...fetchFeedOptions });
+
+        expect(qbSpyOnLeftJoin).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAddSelect).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnAndWhere).toHaveBeenCalledTimes(0);
+        expect(qbSpyOnOrderBy).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnTake).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnSkip).toHaveBeenCalledTimes(1);
+        expect(qbSpyOnGetManyAndCount).toHaveBeenCalledTimes(1);
+      });
     });
   });
 });

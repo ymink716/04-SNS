@@ -18,7 +18,6 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiForbiddenResponse,
-  ApiNotAcceptableResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -189,7 +188,6 @@ export class FeedController {
   @ApiCreatedResponse({ description: ResponseType.feed.like.msg })
   @ApiNotFoundResponse({ description: ErrorType.feed.notFound.msg })
   @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
-  @ApiNotAcceptableResponse({ description: ErrorType.feed.failLike.msg })
   async toggleLike(
     @Param('feedId') feedId: number,
     @CurrentUser() currentUser: ICurrentUser,
