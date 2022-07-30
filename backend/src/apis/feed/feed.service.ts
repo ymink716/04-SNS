@@ -8,7 +8,7 @@ import { QueryBus } from '@nestjs/cqrs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FetchFeedQuery } from 'src/apis/feed/handler/fetchFeed.query';
 import { ErrorType } from 'src/common/type/error.type';
-import { Brackets, Connection, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import {
@@ -30,7 +30,7 @@ export class FeedService {
     @InjectRepository(FeedLike)
     private readonly feedLikeRepository: Repository<FeedLike>,
     private readonly userService: UserService,
-    private readonly connection: Connection,
+    private readonly dataSource: DataSource,
     private readonly queryBus: QueryBus,
   ) {}
 
@@ -58,9 +58,9 @@ export class FeedService {
     });
 
     if (!feed) throw new NotFoundException(ErrorType.feed.notFound.msg);
-
-    if (feed.user.email !== user.email)
+    if (feed.user.email !== user.email) {
       throw new ForbiddenException(ErrorType.feed.notYours.msg);
+    }
     const result = await this.feedRepository.save({
       ...feed,
       user,
@@ -100,7 +100,7 @@ export class FeedService {
   }
 
   async like({ currentUser, feedId }): Promise<boolean> {
-    const queryRunner = this.connection.createQueryRunner();
+    const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('READ COMMITTED');
     try {

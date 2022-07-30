@@ -7,9 +7,9 @@
 
 - [04-SNS](#04-sns)
   - [🔖 목차](#-목차)
-  - [🧐 프로젝트 상세](#-프로젝트-상세)
-  - [💿 기술 스택](#-기술-스택)
-  - [🌕 프로젝트 실행 및 테스트](#-프로젝트-실행-및-테스트)
+  - [🌩 프로젝트 상세](#-프로젝트-상세)
+  - [🚀 프로젝트 실행 및 테스트](#-프로젝트-실행-및-테스트)
+  - [💻 기술 스택](#-기술-스택)
   - [🚀 API 항목](#-api-항목)
     - [**🚶🏻 User**](#-user)
     - [**📋 Feed**](#-feed)
@@ -19,7 +19,7 @@
 
 <br>
 
-## 🧐 프로젝트 상세
+## 🌩 프로젝트 상세
 
 1. 로그인
 
@@ -55,63 +55,32 @@
   - `page` : 몇번째 페이지를 조회할지 정합니다 ( default : 1 )
   - `pageCount` : 한 페이지당 조회될 게시글 수를 정합니다 ( default : 10 )
 
-## 💿 기술 스택
+<br>
 
 ---
 
-<br>
-<div align='center'> 🖥&nbsp&nbsp&nbsp사용한 기술 스택</div>
-<br>
-<p align="center">
-📑&nbsp&nbsp&nbsp구성 언어
-  </p>
-<p align="center">
-<img alt= "icon" wide="80" height="80" src ="https://techstack-generator.vercel.app/ts-icon.svg">
-  </p>
- <p align="center">
-🏠&nbsp&nbsp&nbsp Database
-  </p>
-<p align="center">
-<img alt= "icon" wide="65" height="65" src ="https://techstack-generator.vercel.app/mysql-icon.svg">
-&nbsp&nbsp&nbsp 
-<img alt= "icon" wide="60" height="60" src ="https://velog.velcdn.com/images/sjy0917/post/45b7622b-54df-4f04-bd83-278c33c9bc90/typeorm.png">
+## 🚀 프로젝트 실행 및 테스트
 
-  </p>
-<p align="center">
-🏖&nbsp&nbsp&nbsp 서버
-  </p>
-<p align="center">
-<img alt= "icon" wide="60" height="60" src ="https://symbols.getvecta.com/stencil_89/37_nestjs-icon.a67daec196.svg">
-&nbsp&nbsp
-<img alt= "icon" wide="65" height="65" src ="https://techstack-generator.vercel.app/restapi-icon.svg">
-&nbsp&nbsp
-<img alt= "icon" wide="65" height="65" src ="https://techstack-generator.vercel.app/docker-icon.svg">
-&nbsp&nbsp
-<img alt= "icon" wide="60" height="60" src ="https://upload.wikimedia.org/wikipedia/commons/a/ab/Swagger-logo.png">
-</p>
+**💡 배포 서버에서 테스트**
 
-<p align="center">
-🏖&nbsp&nbsp&nbsp 배포
-  </p>
-<p align="center">
-<img alt= "icon" wide="60" height="60" src ="https://camo.githubusercontent.com/79864e687ef243c4008d8c7c9ecc7b77548625b867ce08094beee7a417d41585/68747470733a2f2f6c6972702e63646e2d776562736974652e636f6d2f61613065663336392f646d73337265702f6d756c74692f6f70742f676f6f676c652d636c6f75642d69636f6e2d353730772e706e67">
-</p>
+- RestApi로 테스트하기
 
----
+  - localhost => sns.leo3179.shop
+  - [Api 항목](#-api-항목)을 참고하여 Rest-Api 호출
+
+- Swagger Docs에서 테스트하기
+  - http://sns.leo3179.shop/api/docs
 
 <br>
 
-## 🌕 프로젝트 실행 및 테스트
-
-**local에서 테스트** 💡
-
-- 실행 명령어
+**💡 local에서 테스트**
 
 ```
+- 실행 명령어
 git clone https://github.com/pre-onboarding-backend-E/04-SNS
 git checkout taeyoung
 cd backend
-env/.env 추가
+# env/.env 추가
 docker compose build
 docker compose up
 ```
@@ -123,17 +92,46 @@ docker compose up
 - Swagger Docs에서 테스트하기
   - http://localhost:3003/api/docs
 
-**배포 서버에서 테스트** 💡
+---
 
-- RestApi로 테스트하기
-
-  - localhost => leo3179.shop:3003
-  - [Api 항목](#-api-항목)을 참고하여 Rest-Api 호출
-
-- Swagger Docs에서 테스트하기
-  - http://leo3179.shop:3003/api/docs
+## 💻 기술 스택
 
 <br>
+<div align='center'> 🖥&nbsp&nbsp&nbsp사용한 기술 스택</div>
+<br>
+<p align="center">
+📑&nbsp&nbsp&nbsp구성 언어
+  </p>
+<p align="center">
+  <img src="https://img.shields.io/badge/typescript-02569B?style=for-the-badge&logo=typescript&logoColor=white">
+
+  </p>
+ <p align="center">
+💾&nbsp&nbsp&nbsp 데이터
+  </p>
+<p align="center">
+  <img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+  <img src="https://img.shields.io/badge/typeorm-c03b28?style=for-the-badge&logo=typeorm&logoColor=white"> 
+  </p>
+<p align="center">
+  🚂  &nbsp&nbsp 서버
+
+  </p>
+<div align="center">
+  <img src="https://img.shields.io/badge/restapi-D33A3F?style=for-the-badge&logo=restful&logoColor=white">
+  <img src="https://img.shields.io/badge/nestjs-D33A3F?style=for-the-badge&logo=nestjs&logoColor=white">
+  <img src="https://img.shields.io/badge/docker-3c90e5?style=for-the-badge&logo=docker&logoColor=white"> 
+  <img src="https://img.shields.io/badge/swagger-6b8d1f?style=for-the-badge&logo=swagger&logoColor=white">
+
+</div>
+
+<div align="center">
+🚀&nbsp&nbsp&nbsp 배포
+<br>
+    <img src="https://img.shields.io/badge/gcp-d44a33?style=for-the-badge&logo=googlecloud&logoColor=yellow"> 
+</div>
+
+---
 
 <br>
 
@@ -148,16 +146,7 @@ docker compose up
 | **GET**  | http://localhost:3003/api/v1/user |      [CurrentUser](./backend/src/common/auth/currentUser.ts)       | [User](backend/src/apis/user/entities/user.entity.ts) | 자신의 유저 정보를 조회합니다. |
 | **POST** | http://localhost:3003/api/v1/user | [CreateUserInput](./backend/src/apis/user/dto/createUser.input.ts) | [User](backend/src/apis/user/entities/user.entity.ts) |       유저를 생성합니다.       |
 
- <div><details><summary>내 유저 정보 조회</summary>
- <div markdown="1">
- 
- </div></details></div>
-
- <div><details><summary>회원가입(유저 정보 생성)</summary>
- <div markdown="1">
- 
-![](image/gif/회원가입.gif)
- </div></details></div>
+[회원가입/유저정보 생성](image/gif/회원가입.gif)
 
 <hr>
 <br>
@@ -174,74 +163,23 @@ docker compose up
 |  **PUT**   | http://localhost:3003/api/v1/feed/{feedId} |                                   feedId                                   |           String('게시글이 성공적으로 복구되었습니다')           |  삭제된 게시글을 복구합니다.   |
 |  **POST**  |     http://localhost:3003/api/v1/feed/     |                                   feedId                                   |         String('좋아요 성공),String('좋아요 취소 성공')          |  게시글에 좋아요를 누릅니다.   |
 
-<hr>
+[게시글 생성](image/gif/게시글%20생성.gif)
 
- <div><details><summary>게시글 생성</summary>
- <div markdown="1">
- 
- ![](image/gif/게시글%20생성.gif) 
- </div></details></div>
+[게시글 수정](image/gif/게시글%20수정.gif)
 
- <div><details><summary>게시글 수정</summary>
- <div markdown="1">
+[게시글 삭제](image/gif/게시글%20삭제.gif)
 
-![](image/gif/게시글%20수정.gif)
+[게시글 복구](image/gif/게시글%20복구.gif)
 
- </div></details></div>
+[게시글 좋아요](image/gif/게시글%20좋아요.gif)
 
-  <div><details><summary>게시글 삭제</summary>
- <div markdown="1">
- 
-![](image/gif/게시글%20삭제.gif)
+[맛집 검색](image/gif/맛집%20검색.gif)
 
- </div></details></div>
+[여행 검색](image/gif/여행%20검색.gif)
 
-   <div><details><summary>게시글 복구</summary>
- <div markdown="1">
- 
-![](image/gif/게시글%20복구.gif)
+[게시글 상세 조회](image/gif/게시글%20상세조회1.gif)
 
-  </div></details></div>
-
-<div><details><summary>게시글 좋아요</summary>
- <div markdown="1">
- 
-![](image/gif/게시글%20좋아요.gif)
-
- </div></details></div>
-
- <div><details><summary>게시글 목록 검색 조회</summary>
-<div markdown="1">
-
-<div><details><summary>맛집 검색</summary>
-<div markdown="1">
- 
-![](image/gif/맛집%20검색.gif)
-
-</div></details></div>
-
-<div><details><summary>여행 검색</summary>
-<div markdown="1">
-
-![](image/gif/여행%20검색.gif)
-
-</div></details></div>
-
- </div></details></div>
-
-<div><details><summary>게시글 상세 조회</summary>
- <div markdown="1">
- 
-![](image/gif/게시글%20상세조회1.gif)
-
- </div></details></div>
-
- <div><details><summary>게시글 상세 조회시 조회수 증가</summary>
- <div markdown="1">
- 
-![](image/gif/게시글%20상세조회2.gif)
-
- </div></details></div>
+[게시글 상세조회시 조회수 증가 구현](image/gif/게시글%20상세조회2.gif)
 
 <hr>
 <br>
@@ -253,21 +191,9 @@ docker compose up
 | **POST** |       http://localhost:3003/api/v1/login        | [loginInput](./backend/src/apis/auth/dto/login.input.ts) | String(액세스 토큰) |      로그인      |
 | **POST** | http://localhost:3003/api/v1/restoreAccessToken |                            -                             | String(액세스 토큰) | 액세스 토큰 복구 |
 
- <div><details><summary>로그인</summary>
- <div markdown="1">
- 
-![](image/gif/로그인.gif)
+[로그인](image/gif/로그인.gif)
 
- </div></details></div>
-
-  <div><details><summary>액세스 토큰 복구</summary>
- <div markdown="1">
- 
-![](image/gif/액세스%20토큰%20복구.gif)
-
- </div></details></div>
-
- <br>
+[액세스 토큰 복구](image/gif/액세스%20토큰%20복구.gif)
 
 ---
 
