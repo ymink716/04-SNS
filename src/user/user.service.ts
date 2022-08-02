@@ -33,7 +33,7 @@ export class UserService {
   }
 
   async getUserByEmail(email: string): Promise<User> {
-    const user: User = await this.userRepository.findOne({ where: { email }});
+    const user: User = await this.userRepository.findOne({ where: { email } });
     
     if (!user) { 
       throw new HttpException(ErrorType.userNotFound.message, ErrorType.userNotFound.code);
@@ -84,10 +84,18 @@ export class UserService {
 
   /**
    * @description 로그아웃 시 Refresh Token 값을 null로 바꿈
-   */
+  */
   async removeRefreshToken(id: number) {
     return await this.userRepository.update(id, {
       hashedRefreshToken: null,
     });
+  }
+
+  async getUsersByFollowers(user: User) {
+    throw new Error('Method not implemented.');
+  }
+
+  async getUsersByFollowings(user: User) {
+    throw new Error('Method not implemented.');
   }
 }

@@ -1,6 +1,6 @@
 import { Post } from 'src/post/entity/post.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { classToPlain, Exclude, instanceToPlain } from 'class-transformer';
+import { Exclude, instanceToPlain } from 'class-transformer';
 import {
   Column,
   Entity,

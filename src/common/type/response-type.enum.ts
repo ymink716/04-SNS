@@ -10,6 +10,8 @@ export const ResponseType = {
   getUser: { code: 200, message: '유저 정보 조회에 성공했습니다!' },
   follow: { code: 201, message: '해당 유저를 팔로우하였습니다!' },
   unfollow: { code: 200, message: '해당 유저를 언팔로우하였습니다!' },
+  getFollowers: { code: 200, message: '팔로워 목록 조회에 성공했습니다!' },
+  getFollowings: { code: 200, message: '팔로잉 목록 조회에 성공했습니다!' },
 
   // Post
   createPost: { code: 201, message: '게시물 생성에 성공했습니다!' },
@@ -28,5 +30,5 @@ export const ResponseType = {
   updateComment: { code: 200, message: '댓글 수정에 성공했습니다!' },
   deleteComment: { code: 200, message: '댓글 삭제에 성공했습니다!' },
 
-  };
+};
   

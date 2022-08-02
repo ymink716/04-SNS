@@ -22,10 +22,18 @@ export class FollowService {
       throw new HttpException(ErrorType.canNotFollowSameUser.message, ErrorType.canNotFollowSameUser.code);
     }
 
+    const existedFollow = await this.followRepository.findOne({
+      where: { 
+        follower: { id: follower.id },
+        following: { id: following.id }, 
+    }});
+    
+    if (existedFollow) {
+      throw new HttpException(ErrorType.alreadyFollowed.message, ErrorType.alreadyFollowed.code);
+    }
+
     try {
-      const follow: Follow = await this.followRepository.create({ 
-        follower, following 
-    });
+      const follow: Follow = await this.followRepository.create({ follower, following });
       
       await this.followRepository.save(follow);
     } catch (error) {
@@ -38,20 +46,13 @@ export class FollowService {
    * @description 팔로우 관계를 해제
   */
   async unfollow(following: User, follower: User) {
-    try {
-      const result = await this.followRepository
-        .createQueryBuilder('follow')
-        .delete()
-        .where('follow.followerId = :followerId', { followrId: follower.id })
-        .andWhere('follow.followingId = :followingId', { followingId: following.id })
-        .execute();
+    const result = await this.followRepository.delete({
+      follower: { id: follower.id },
+      following: { id: following.id },
+    });
 
-      if (result.affected === 0) {
-        throw new HttpException(ErrorType.followNotFound.message, ErrorType.followNotFound.code);
-      }
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
+    if (result.affected === 0) {
+      throw new HttpException(ErrorType.followNotFound.message, ErrorType.followNotFound.code);
     }
   }
 }

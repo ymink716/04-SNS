@@ -7,13 +7,18 @@ export abstract class GetUserResponseData {
   user: User;
 }
 
+export abstract class GetUsersResponseData {
+  @ApiProperty({ description: 'User 리스트' })
+  users: User[];
+}
+
 export class UserResponse extends BaseResponse {
   constructor() {
     super();
   }
   
   @ApiProperty()
-  data?: GetUserResponseData;
+  data?: GetUserResponseData | GetUsersResponseData;
   
   public static response(statusCode?: number, message?: string, data?: any) {
     const response = new UserResponse();

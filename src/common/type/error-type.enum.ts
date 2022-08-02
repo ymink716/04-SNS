@@ -11,6 +11,7 @@ export const ErrorType = {
   emailExist: { code: 409, message: '해당 이메일은 이미 사용중입니다!' },
   canNotFollowSameUser: { code: 400, message: '같은 유저를 팔로우할 수 없습니다.' },
   followNotFound: { code: 404, message: '해당 팔로우 관계를 찾을 수 없습니다.' },
+  alreadyFollowed: { code: 400, message: '이미 팔로우 중인 유저입니다.' },
   
   // Post
   postNotFound: { code: 404, message: '해당 게시물이 존재하지 않습니다' },
