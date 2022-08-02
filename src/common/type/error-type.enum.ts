@@ -9,7 +9,9 @@ export const ErrorType = {
   userNotFound: { code: 404, message: '존재하지 않는 유저입니다!' },
   nicknameExist: { code: 409, message: '해당 닉네임은 이미 사용중입니다!' },
   emailExist: { code: 409, message: '해당 이메일은 이미 사용중입니다!' },
-
+  canNotFollowSameUser: { code: 400, message: '같은 유저를 팔로우할 수 없습니다.' },
+  followNotFound: { code: 404, message: '해당 팔로우 관계를 찾을 수 없습니다.' },
+  
   // Post
   postNotFound: { code: 404, message: '해당 게시물이 존재하지 않습니다' },
   postBadRequest: { code: 400, message: '해당 게시물 정보와 일치하지 않습니다.' },

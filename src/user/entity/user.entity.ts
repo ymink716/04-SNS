@@ -13,6 +13,7 @@ import { Like } from 'src/like/entity/like.entity';
 import { Comment } from 'src/comment/entity/comment.entity';
 import { PostViewLog } from 'src/post/entity/post-view-log.entity';
 import { IsEmail } from 'class-validator';
+import { Follow } from './follow.entity';
 
 @Entity()
 export class User {
@@ -67,6 +68,12 @@ export class User {
   // 사용자 : 접속기록 -> 1:n
   @OneToMany(() => PostViewLog, postviewLog => postviewLog.user)
   postViewLogs: PostViewLog[];
+
+  @OneToMany(() => Follow, follow => follow.follower)
+  followers: Follow[];
+
+  @OneToMany(() => Follow, follow => follow.following)
+  followings: Follow[];
 
   toJSON() {
     return instanceToPlain(this);

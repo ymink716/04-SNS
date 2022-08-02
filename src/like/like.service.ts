@@ -46,8 +46,10 @@ export class LikeService {
         .createQueryBuilder('like')
         .delete()
         .where('postId = :postId', { postId })
-        .where('userId = :userId', {userId: user.id })
+        .andWhere('userId = :userId', { userId: user.id })
         .execute();
+      
+      
     } catch (error) {
       console.error(error);
       throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);

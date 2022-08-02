@@ -1,12 +1,16 @@
 export const ResponseType = {
-  // Auth & User
+  // Auth
   registerUser: { code: 201, message: '회원가입 요청이 성공했습니다!' },
-  getUser: { code: 200, message: '유저 정보 조회에 성공했습니다!' },
   loginUser: { code: 200, message: '로그인 요청에 성공했습니다!' },
   logoutUser: { code: 200, message: '로그아웃 요청에 성공했습니다!' },
   verifyUser: { code: 200, message: '유저 인증에 성공했습니다!' },
   refreshTokenWithUser: { code: 200, message: '유저 인증에 성공했습니다!' },
-    
+
+  // User
+  getUser: { code: 200, message: '유저 정보 조회에 성공했습니다!' },
+  follow: { code: 201, message: '해당 유저를 팔로우하였습니다!' },
+  unfollow: { code: 200, message: '해당 유저를 언팔로우하였습니다!' },
+
   // Post
   createPost: { code: 201, message: '게시물 생성에 성공했습니다!' },
   updatePost: { code: 200, message: '게시물 수정에 성공했습니다!' },
