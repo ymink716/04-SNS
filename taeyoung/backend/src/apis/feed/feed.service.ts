@@ -101,7 +101,7 @@ export class FeedService {
   async like({ currentUser, feedId }): Promise<boolean> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
-    await queryRunner.startTransaction('READ COMMITTED');
+    await queryRunner.startTransaction('REPEATABLE READ');
     try {
       const user = await this.userRepository.findOne({
         where: { email: currentUser.email },
