@@ -77,27 +77,4 @@ export class CommentService {
       throw new HttpException(ErrorType.commentForbidden.message, ErrorType.commentForbidden.code);
     }
   }
-
-  /**
-   * @description 하나의 게시물에 달린 댓글을 모두 가져옵니다.
-  */
-  async getCommentsByPost(postId: number): Promise<Comment[]> {
-    const comments: Comment[] = await this.commentRepository
-    .createQueryBuilder('comment')
-    .innerJoin('comment.post', 'post')
-    .innerJoinAndSelect('comment.user', 'user')
-    .select([
-      'comment.id',
-      'comment.content',
-      'comment.createdAt',
-      'comment.updatedAt',
-      'user.id',
-      'user.email',
-      'user.nickname',
-    ])
-    .where('post.id = :postId', { postId })
-    .getMany();
-
-    return comments;
-  }
 }

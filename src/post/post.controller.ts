@@ -11,7 +11,7 @@ import { PostHashtagService } from './post-hashtag.service';
 import { PostService } from './post.service';
 import { GetPostsDto, OrderOption, SortOption } from './dto/get-posts.dto';
 import { PostViewLogService } from './post-view-log.service';
-import { PostResponse, PostResponseData, PostDetailResponseData, PostListResponseData } from './dto/post-response';
+import { PostResponse, PostResponseData, PostListResponseData } from './dto/post-response';
 import { ResponseType } from 'src/common/type/response-type.enum';
 import { CommentService } from 'src/comment/comment.service';
 
@@ -133,7 +133,7 @@ export class PostController {
   */
   @AllowAny()
   @ApiOperation({ summary: '게시물 상세 ', description: '게시물 상세보기 API '})
-  @ApiOkResponse({ description: ResponseType.getPost.message, type: PostDetailResponseData })
+  @ApiOkResponse({ description: ResponseType.getPost.message, type: PostResponseData })
   @Get('/:postId')
   async getOne(
     @Param('postId', ParseIntPipe) postId: number,
@@ -141,16 +141,13 @@ export class PostController {
     @Ip() ipAddress: string,
   ) {
     const isVisited = await this.postViewLogservice.isVisited(postId, user, ipAddress);
-
-    const post = await this.postService.getOne(postId, isVisited);
-    const comments = await this.commentService.getCommentsByPost(postId);
-    
+    const post = await this.postService.getOne(postId, isVisited);    
     await this.postViewLogservice.createOne(user, post, ipAddress);
 
     return PostResponse.response(
       ResponseType.getPost.code,
       ResponseType.getPost.message,
-      { post, comments },
+      post,
     );
   }
 

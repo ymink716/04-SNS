@@ -117,10 +117,15 @@ export class PostService {
    * - 방문한 적이 없는 게시물이라면 조회수 +1 하여 업데이트
   */
   async getOne(postId: number, isVisited: boolean) {
-    const post: Post = await this.postRepository.findOne({ 
-      where: { id: postId }, 
-      relations: ['user'],
-    });
+    const post: Post = await this.postRepository
+      .createQueryBuilder('post')
+      .leftJoinAndSelect('post.comments', 'comments')
+      .leftJoin('comments.user', 'commenter')
+      .addSelect(['commenter.id', 'commenter.email', 'commenter.nickname'])
+      .leftJoin('post.user', 'author')
+      .addSelect(['author.id', 'author.email', 'author.nickname'])
+      .where('post.id = :postId', { postId })
+      .getOne();
 
     if (!post) {
       throw new HttpException(ErrorType.postNotFound.message, ErrorType.postNotFound.code);
