@@ -15,7 +15,7 @@ export class FollowService {
   /**
    * @description 팔로우 관계를 생성
   */
-  async follow(following: User, follower: User) {
+  async follow(follower: User, following: User) {
     const isSameUser = following.id === follower.id;
 
     if (isSameUser) {
@@ -45,7 +45,7 @@ export class FollowService {
   /**
    * @description 팔로우 관계를 해제
   */
-  async unfollow(following: User, follower: User) {
+  async unfollow(follower: User, following: User) {
     const result = await this.followRepository.delete({
       follower: { id: follower.id },
       following: { id: following.id },
@@ -54,5 +54,39 @@ export class FollowService {
     if (result.affected === 0) {
       throw new HttpException(ErrorType.followNotFound.message, ErrorType.followNotFound.code);
     }
+  }
+
+  /**
+   * @description 유저의 팔로워 목록을 가져옵니다.
+  */
+  async getFollowers(userId: number) {
+    const result = await this.followRepository
+      .createQueryBuilder('follow')
+      .leftJoin('follow.follower', 'follower')
+      .leftJoin('follow.following', 'following')
+      .addSelect(['follower.id', 'follower.email', 'follower.nickname'])
+      .where('following.id = :followingId', { followingId: userId })
+      .getMany();
+
+    const followers = result.map(f => f.follower);
+
+    return followers;
+  }
+
+  /**
+   * @description 유저의 팔로잉 목록을 가져옵니다.
+  */
+  async getFollowings(userId: number) {
+    const result = await this.followRepository
+      .createQueryBuilder('follow')
+      .leftJoin('follow.follower', 'follower')
+      .leftJoin('follow.following', 'following')
+      .addSelect(['following.id', 'following.email', 'following.nickname'])
+      .where('follower.id = :followerId', { followerId: userId })
+      .getMany();
+
+    const followings = result.map(f => f.following);
+
+    return followings;
   }
 }

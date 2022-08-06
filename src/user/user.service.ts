@@ -33,8 +33,12 @@ export class UserService {
   }
 
   async getUserByEmail(email: string): Promise<User> {
-    const user: User = await this.userRepository.findOne({ where: { email } });
-    
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.posts', 'posts')
+      .where('user.email = :email', { email })
+      .getOne();
+
     if (!user) { 
       throw new HttpException(ErrorType.userNotFound.message, ErrorType.userNotFound.code);
     }
@@ -89,13 +93,5 @@ export class UserService {
     return await this.userRepository.update(id, {
       hashedRefreshToken: null,
     });
-  }
-
-  async getUsersByFollowers(user: User) {
-    throw new Error('Method not implemented.');
-  }
-
-  async getUsersByFollowings(user: User) {
-    throw new Error('Method not implemented.');
   }
 }
