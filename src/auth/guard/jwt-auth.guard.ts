@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { ErrorType } from 'src/common/type/error-type.enum';
+import { ErrorType } from 'src/common/exception/error-type.enum';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {

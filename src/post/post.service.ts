@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
-import { ErrorType } from 'src/common/type/error-type.enum';
+import { ErrorType } from 'src/common/exception/error-type.enum';
 import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostsDto, OrderOption, SortOption } from './dto/get-posts.dto';
@@ -175,11 +175,11 @@ export class PostService {
         'post.createdAt',
         'post.updatedAt',
       ])
-      .leftJoin('post.user', 'user')
+      .leftJoin('post.user', 'author')
       .addSelect([
-        'user.id',
-        'user.email',
-        'user.nickname',
+        'author.id',
+        'author.email',
+        'author.nickname',
       ]);
 
     if (search) {

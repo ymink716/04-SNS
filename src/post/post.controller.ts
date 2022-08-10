@@ -12,8 +12,7 @@ import { PostService } from './post.service';
 import { GetPostsDto, OrderOption, SortOption } from './dto/get-posts.dto';
 import { PostViewLogService } from './post-view-log.service';
 import { PostResponse, PostResponseData, PostListResponseData } from './dto/post-response';
-import { ResponseType } from 'src/common/type/response-type.enum';
-import { CommentService } from 'src/comment/comment.service';
+import { ResponseType } from 'src/common/response/response-type.enum';
 
 @ApiTags('posts')
 @Controller('posts')
@@ -24,7 +23,6 @@ export class PostController {
     private readonly hashtagService: HashtagService,
     private readonly postHashtagService: PostHashtagService,
     private readonly postViewLogservice: PostViewLogService,
-    private readonly commentService: CommentService,
   ) {}
 
   /**

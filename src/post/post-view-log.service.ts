@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
-import { ErrorType } from 'src/common/type/error-type.enum';
+import { ErrorType } from 'src/common/exception/error-type.enum';
 import { Brackets, Repository } from 'typeorm';
 import { PostViewLog } from './entity/post-view-log.entity';
 import { Post } from './entity/post.entity';

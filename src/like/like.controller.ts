@@ -6,7 +6,7 @@ import { GetUser } from 'src/common/custom-decorator/get-user.decorator';
 import { LikeDto } from './dto/like.dto';
 import { LikeService } from './like.service';
 import { PostService } from 'src/post/post.service';
-import { ResponseType } from 'src/common/type/response-type.enum';
+import { ResponseType } from 'src/common/response/response-type.enum';
 import { LikeResponse } from './dto/like.response';
 
 @ApiTags('likes')
@@ -18,11 +18,8 @@ export class LikeController {
     private readonly postService: PostService,  
   ) {}
 
-  /**
-   * @description 해당 게시물에 좋아요를 추가합니다. 
-  */
   @ApiBearerAuth('access_token')
-  @ApiOperation({ summary: '좋아요', description: '좋아요' })
+  @ApiOperation({ summary: '좋아요', description: '해당 게시물에 좋아요를 추가합니다.' })
   @ApiBody({ type: LikeDto })
   @ApiCreatedResponse({ description: ResponseType.createLike.message })
   @Post('/uplike')
@@ -38,11 +35,8 @@ export class LikeController {
     );
   }
 
-  /**
-   * @description 해당 게시물에 좋아요를 취소합니다. 
-  */
   @ApiBearerAuth('access_token')
-  @ApiOperation({ summary: '좋아요 취소', description: '좋아요 취소' })
+  @ApiOperation({ summary: '좋아요 취소', description: '해당 게시물에 좋아요를 취소합니다.' })
   @ApiBody({ type: LikeDto })
   @ApiCreatedResponse({ description: ResponseType.deleteLike.message })
   @Post('/unlike')

@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 import { BaseAPIDocumentation } from './common/config/swagger.config';
 import { SwaggerModule } from '@nestjs/swagger';
 import * as requestIp from 'request-ip';
+import { HttpExceptionFilter } from './common/exception/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -20,6 +21,8 @@ async function bootstrap() {
       enableImplicitConversion: true  // 암묵적으로 타입을 변환
     }
   }));
+
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Swagger API Docs
   const documentOptions = new BaseAPIDocumentation().initializeOptions();

@@ -2,7 +2,7 @@ import { Controller, Delete, Get, Param, ParseIntPipe, Post, UseGuards } from '@
 import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { GetUser } from 'src/common/custom-decorator/get-user.decorator'; 
-import { ResponseType } from 'src/common/type/response-type.enum'; 
+import { ResponseType } from 'src/common/response/response-type.enum'; 
 import { User } from './entity/user.entity';
 import { UserService } from './user.service';
 import { UserResponse } from './dto/user-response';

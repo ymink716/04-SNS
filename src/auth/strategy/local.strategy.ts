@@ -2,7 +2,7 @@ import { Strategy } from 'passport-local';
 import { PassportStrategy } from '@nestjs/passport';
 import { HttpException, Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
-import { ErrorType } from 'src/common/type/error-type.enum';
+import { ErrorType } from 'src/common/exception/error-type.enum';
 
 /**
   * @description 로그인 시 사용하는 local strategy

@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { User } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
 import { GetUser } from 'src/common/custom-decorator/get-user.decorator'; 
-import { ResponseType } from 'src/common/type/response-type.enum'; 
+import { ResponseType } from 'src/common/response/response-type.enum'; 
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { CreateUserDto } from './dto/create-user.dto';

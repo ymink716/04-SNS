@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Comment } from "src/comment/entity/comment.entity";
-import { BaseResponse } from "src/common/response-handler/base-response";
+import { BaseResponse } from "src/common/response/base-response";
 
 export abstract class CommentResponseData {
   @ApiProperty({ description: '게시물 정보' })

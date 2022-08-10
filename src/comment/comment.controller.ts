@@ -6,7 +6,7 @@ import { GetUser } from 'src/common/custom-decorator/get-user.decorator';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
-import { ResponseType } from 'src/common/type/response-type.enum';
+import { ResponseType } from 'src/common/response/response-type.enum';
 import { CommentResponse, CommentResponseData } from './dto/comment-response';
 
 @ApiTags('comments')

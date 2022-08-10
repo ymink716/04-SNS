@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from 'src/post/entity/post.entity';
 import { PostService } from 'src/post/post.service';
 import { User } from 'src/user/entity/user.entity';
-import { ErrorType } from 'src/common/type/error-type.enum';
+import { ErrorType } from 'src/common/exception/error-type.enum';
 import { Repository } from 'typeorm';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -28,7 +28,6 @@ export class CommentService {
 
       return newComment;
     } catch (error) {
-      console.error(error);
       throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
     }
   }
