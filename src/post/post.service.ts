@@ -119,6 +119,7 @@ export class PostService {
   async getOne(postId: number, isVisited: boolean) {
     const post: Post = await this.postRepository
       .createQueryBuilder('post')
+      .loadRelationCountAndMap('post.likes', 'post.likes')
       .leftJoinAndSelect('post.comments', 'comments')
       .leftJoin('comments.user', 'commenter')
       .addSelect(['commenter.id', 'commenter.email', 'commenter.nickname'])
@@ -171,7 +172,6 @@ export class PostService {
         'post.content',
         'post.hashtagsText',
         'post.views',
-        'post.likeCount',
         'post.createdAt',
         'post.updatedAt',
       ])
@@ -180,7 +180,10 @@ export class PostService {
         'author.id',
         'author.email',
         'author.nickname',
-      ]);
+      ])
+      .loadRelationCountAndMap('post.likes', 'post.likes')
+      .loadRelationCountAndMap('post.comments', 'post.comments');
+
 
     if (search) {
       qb.andWhere('post.title like :title', { title: `%${search}%` })
@@ -220,15 +223,5 @@ export class PostService {
     }
 
     return post;
-  }
-
-  /**
-   * @description 게시물에 좋아요를 하거나 취소할 경우 좋아요 수를 업데이트합니다. 
-  */
-  async updateLikeCount(postId: number, n: number) {
-    const post: Post = await this.getPostById(postId);
-    post.likeCount = post.likeCount + n;
-
-    await this.postRepository.save(post);
   }
 }

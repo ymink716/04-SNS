@@ -28,7 +28,6 @@ export class LikeService {
       const like = this.likeRepository.create({ user, post });
       await this.likeRepository.save(like);
     } catch (error) {
-      console.error(error);
       throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
     }
   }
@@ -49,9 +48,7 @@ export class LikeService {
         .andWhere('userId = :userId', { userId: user.id })
         .execute();
       
-      
     } catch (error) {
-      console.error(error);
       throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
     }
   }

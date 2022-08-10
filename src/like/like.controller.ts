@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { User } from 'src/user/entity/user.entity';
@@ -20,14 +20,10 @@ export class LikeController {
 
   @ApiBearerAuth('access_token')
   @ApiOperation({ summary: '좋아요', description: '해당 게시물에 좋아요를 추가합니다.' })
-  @ApiBody({ type: LikeDto })
   @ApiCreatedResponse({ description: ResponseType.createLike.message })
-  @Post('/uplike')
-  async uplike(@GetUser() user: User, @Body() likeDto: LikeDto) {
-    const { postId } = likeDto;
-
+  @Post('/:postId')
+  async uplike(@GetUser() user: User, @Param('postId', ParseIntPipe) postId: number) {
     await this.likeService.uplike(user, postId);
-    await this.postService.updateLikeCount(postId, 1);
 
     return LikeResponse.response(
       ResponseType.createLike.code,
@@ -37,14 +33,10 @@ export class LikeController {
 
   @ApiBearerAuth('access_token')
   @ApiOperation({ summary: '좋아요 취소', description: '해당 게시물에 좋아요를 취소합니다.' })
-  @ApiBody({ type: LikeDto })
-  @ApiCreatedResponse({ description: ResponseType.deleteLike.message })
-  @Post('/unlike')
-  async unlike(@GetUser() user: User, @Body() likeDto: LikeDto) {
-    const { postId } = likeDto;
-
+  @ApiOkResponse({ description: ResponseType.deleteLike.message })
+  @Delete('/:postId')
+  async unlike(@GetUser() user: User, @Param('postId', ParseIntPipe) postId: number) {
     await this.likeService.unlike(user, postId);
-    await this.postService.updateLikeCount(postId, -1);
 
     return LikeResponse.response(
       ResponseType.deleteLike.code,
