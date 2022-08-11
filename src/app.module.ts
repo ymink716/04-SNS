@@ -8,6 +8,7 @@ import { PostModule } from './post/post.module';
 import { CommentModule } from './comment/comment.module';
 import { APP_FILTER } from '@nestjs/core';
 import { HttpExceptionFilter } from './common/exception/http-exception.filter';
+import { AppController } from './app.controller';
 
 @Module({
   providers: [
@@ -35,8 +36,8 @@ import { HttpExceptionFilter } from './common/exception/http-exception.filter';
       retryDelay: 5000,
       timezone: 'Z',
     }),
-    AuthModule, 
-    LikeModule, UserModule, PostModule, CommentModule
+    AuthModule, LikeModule, UserModule, PostModule, CommentModule
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

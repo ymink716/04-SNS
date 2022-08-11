@@ -2,24 +2,36 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { ErrorType } from 'src/common/exception/error-type.enum';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostsDto, OrderOption, SortOption } from './dto/get-posts.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entity/post.entity';
+import { HashtagService } from './hashtag.service';
+import { PostHashtagService } from './post-hashtag.service';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+    private readonly hashtagService: HashtagService,
+    private readonly postHashtagService: PostHashtagService,
+    private readonly dataSource: DataSource,
   ) {}
   
   /**
    * @description 게시물 생성에 관한 비지니스 로직
+   * - 트랜잭션으로 다음을 진행합니다.
+   * - 게시물을 생성합니다.
+   * - 해시태그 리스트를 생성합니다.
+   * - 게시물과 해시태그의 관계를 연결합니다.
   */
   async createPost(createPostDto: CreatePostDto, user: User) {
     const { title, content, hashtags } = createPostDto;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.startTransaction();
     
     try {
       const post: Post = this.postRepository.create({ 
@@ -29,35 +41,57 @@ export class PostService {
         user,
       });
 
-      const newPost = await this.postRepository.save(post);
+      await queryRunner.manager.save(post);
+      const hashtagList = await this.hashtagService.createHashtagList(queryRunner.manager, hashtags);
+      await this.postHashtagService.createPostHashtags(queryRunner.manager, hashtagList, post);
 
-      return newPost;
+      await queryRunner.commitTransaction();
+
+      return post;
     } catch (error) {
-      console.error(error);
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 
   /**
    * @description 게시물 수정에 관한 비지니스 로직
-   * - 인증된 사용자가 해당 게시물의 작성자인지 확인한 뒤 게시물 업데이트
+   * - 트랜잭션으로 다음을 진행합니다.
+   * - 게시물을 업데이트합니다.
+   * - 변경된 해시태그 리스트를 생성합니다.
+   * - 이전 해시태그와 게시물 관계를 제거합니다.
+   * - 변경된 해시태그와 게시물 관계를 저장합니다.
   */
   async updatePost(id: number, updatepostDto: UpdatePostDto, user: User) {    
     const { title, content, hashtags } = updatepostDto;
-    
+
     const post: Post = await this.getPostById(id);
     this.checkAuthor(user, post);
 
-    try {
-      post.title = title;
-      post.content = content;
-      post.hashtagsText = hashtags;
+    post.title = title;
+    post.content = content;
+    post.hashtagsText = hashtags;
+    
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.startTransaction();
 
-      const updatedPost = await this.postRepository.save(post);
+    try {
+      const updatedPost = await queryRunner.manager.save(post);
+      const hashtagList = await this.hashtagService.createHashtagList(queryRunner.manager, hashtags);
+      
+      await this.postHashtagService.deletePostHashtagByPost(queryRunner.manager, updatedPost);
+      await this.postHashtagService.createPostHashtags(queryRunner.manager, hashtagList, updatedPost);
+      
+      await queryRunner.commitTransaction();
+
       return updatedPost;
     } catch (error) {
-      console.error(error);
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -107,7 +141,6 @@ export class PostService {
       post.deletedAt = null;
       await this.postRepository.save(post);
     } catch (error) {
-      console.error(error);
       throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
     }
   }
@@ -142,7 +175,6 @@ export class PostService {
       
       return updatedPost;
     } catch (error) {
-      console.error(error);
       throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
     }
   }
@@ -207,7 +239,6 @@ export class PostService {
 
     return posts;
     } catch (error) {
-      console.error(error);
       throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
     }
   }
@@ -223,5 +254,17 @@ export class PostService {
     }
 
     return post;
+  }
+
+  /**
+   * @description 텍스트 형태의 해시태그를 분할합니다.
+   * - #서울,#맛집 => ['서울', '맛집']
+  */
+  splitHashtags(hashtags: string): string[] {
+    const regexp = /[^#,]+/g;  // # , 제외하고 검색
+    const matchedArray = [ ...hashtags.matchAll(regexp) ]
+    const tags = matchedArray.map(e => e[0]);
+  
+    return tags;
   }
 }

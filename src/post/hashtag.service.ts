@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Hashtag } from './entity/hashtag.entity';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class HashtagService {
    * @description 해시태그 리스트를 생성합니다.
    * - 텍스트 형태의 해시태그 리스트를 받아 태그만 남겨 hashtag 테이블에 저장
   */
-  async createHashtagList(hashtags: string): Promise<Hashtag[]> {
+  async createHashtagList(transactionManager: EntityManager, hashtags: string): Promise<Hashtag[]> {
     const tags = this.splitHashtags(hashtags);
 
     const hashtagList: Hashtag[] = [];
@@ -24,7 +24,7 @@ export class HashtagService {
         hashtagList.push(existedTag);
       } else {
         const tag = this.hashtagRepository.create({ content: t });
-        const newtag = await this.hashtagRepository.save(tag);
+        const newtag = await transactionManager.save(tag);
         hashtagList.push(newtag);
       }
     }

@@ -6,8 +6,6 @@ import { AllowAny } from 'src/common/custom-decorator/allow-any.decorator';
 import { GetUser } from 'src/common/custom-decorator/get-user.decorator'; 
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
-import { HashtagService } from './hashtag.service';
-import { PostHashtagService } from './post-hashtag.service';
 import { PostService } from './post.service';
 import { GetPostsDto, OrderOption, SortOption } from './dto/get-posts.dto';
 import { PostViewLogService } from './post-view-log.service';
@@ -20,29 +18,16 @@ import { ResponseType } from 'src/common/response/response-type.enum';
 export class PostController {
   constructor(
     private readonly postService: PostService,
-    private readonly hashtagService: HashtagService,
-    private readonly postHashtagService: PostHashtagService,
     private readonly postViewLogservice: PostViewLogService,
   ) {}
 
-  /**
-   * @description 게시물 생성 API
-   * - 해시태그 리스트를 생성합니다.
-   * - 게시물을 생성합니다.
-   * - 게시물과 해시태그의 관계를 연결합니다.
-  */
   @ApiBearerAuth('access_token')
   @ApiOperation({ summary: '게시물 생성 ', description: '게시물 생성 API' })
   @ApiBody({ type: CreatePostDto })
   @ApiCreatedResponse({ description: ResponseType.createPost.message, type: PostResponseData })
   @Post()
-  async createPost(@Body() createPostDto: CreatePostDto, @GetUser() user: User) {
-    const { hashtags } = createPostDto;
-  
-    const hashtagList = await this.hashtagService.createHashtagList(hashtags);
+  async createPost(@Body() createPostDto: CreatePostDto, @GetUser() user: User) {  
     const post = await this.postService.createPost(createPostDto, user);
-
-    await this.postHashtagService.createPostHashtags(hashtagList, post);
 
     return PostResponse.response(
       ResponseType.createPost.code,
@@ -51,13 +36,6 @@ export class PostController {
     );
   }
 
-  /**
-   * @description 게시물 수정 API
-   * - 변경된 해시태그 리스트를 생성합니다.
-   * - 게시물을 업데이트합니다.
-   * - 이전 해시태그와 게시물 관계를 제거합니다.
-   * - 변경된 해시태그와 게시물 관계를 저장합니다.
-  */
   @ApiBearerAuth('access_token')
   @ApiOperation({ summary: '게시물 수정 ', description: '게시물 수정 API '})
   @ApiBody({ type: UpdatePostDto })
@@ -67,14 +45,8 @@ export class PostController {
     @Body() updatePostDto: UpdatePostDto, 
     @GetUser() user: User,
     @Param('postId', ParseIntPipe) postId: number,
-  ) {
-    const { hashtags } = updatePostDto;
-    
-    const hashtagList = await this.hashtagService.createHashtagList(hashtags);
+  ) {    
     const post = await this.postService.updatePost(postId, updatePostDto, user);
-
-    await this.postHashtagService.deletePostHashtagByPost(post);
-    await this.postHashtagService.createPostHashtags(hashtagList, post);
 
     return PostResponse.response(
       ResponseType.updatePost.code,
@@ -83,10 +55,6 @@ export class PostController {
     );
   }
 
-  /**
-   * @description 게시물 삭제 API
-   * - 작성자가 게시물을 삭제합니다.
-  */
   @ApiBearerAuth('access_token')
   @ApiOperation({ summary: '게시물 삭제 ', description: '게시물 삭제 API '})
   @ApiOkResponse({ description: ResponseType.deletePost.message })
@@ -103,10 +71,6 @@ export class PostController {
     );
   }
 
-  /**
-   * @description 게시물 복구 API
-   * - 작성자가 삭제된 게시물을 복구합니다.
-  */
   @ApiBearerAuth('access_token')
   @ApiOperation({ summary: '게시물 복구 ', description: '게시물 복구 API '})
   @ApiOkResponse({ description: ResponseType.restorePost.message })

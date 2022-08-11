@@ -17,16 +17,11 @@ export class PostViewLogService {
    * @description 사용자와, Ip를 받아 게시물 방문 기록을 생성합니다.
   */
   async createOne(user: User, post: Post, clientIp: string): Promise<void> {
-    try {
-      const log: PostViewLog = await this.postViewLogRepository.create({
-        user, post, clientIp
-      });
+    const log: PostViewLog = await this.postViewLogRepository.create({
+      user, post, clientIp
+    });
   
-      await this.postViewLogRepository.save(log);
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
-    }
+    await this.postViewLogRepository.save(log);
   }
 
   /**
@@ -39,8 +34,7 @@ export class PostViewLogService {
       userId = user.id;
     }
 
-    try {
-      const log = await this.postViewLogRepository
+    const log = await this.postViewLogRepository
       .createQueryBuilder('postViewLog')
       .innerJoinAndSelect('postViewLog.post', 'post')
       .where('post.id = :postId', { postId })
@@ -50,13 +44,9 @@ export class PostViewLogService {
       }))
       .getOne();
     
-      if (log) {
-        return true;
-      } 
-      return false;
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
-    }
+    if (log) {
+      return true;
+    } 
+    return false;
   }
 }

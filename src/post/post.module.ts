@@ -18,7 +18,6 @@ import { PostService } from './post.service';
     Hashtag, 
     PostHashtag, 
     PostViewLog, 
-    Comment,
   ])],
   controllers: [PostController],
   providers: [
@@ -26,8 +25,7 @@ import { PostService } from './post.service';
     HashtagService, 
     PostHashtagService, 
     PostViewLogService,
-    CommentService,
   ],
-  exports: [PostService]
+  exports: [PostService, HashtagService, PostHashtagService]
 })
 export class PostModule {}

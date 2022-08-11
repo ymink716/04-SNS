@@ -1,11 +1,9 @@
-import { Body, Controller, Delete, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Delete, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { User } from 'src/user/entity/user.entity';
 import { GetUser } from 'src/common/custom-decorator/get-user.decorator';
-import { LikeDto } from './dto/like.dto';
 import { LikeService } from './like.service';
-import { PostService } from 'src/post/post.service';
 import { ResponseType } from 'src/common/response/response-type.enum';
 import { LikeResponse } from './dto/like.response';
 
@@ -15,7 +13,6 @@ import { LikeResponse } from './dto/like.response';
 export class LikeController {
   constructor(
     private readonly likeService: LikeService,
-    private readonly postService: PostService,  
   ) {}
 
   @ApiBearerAuth('access_token')
