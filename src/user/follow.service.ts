@@ -15,7 +15,7 @@ export class FollowService {
   /**
    * @description 팔로우 관계를 생성
   */
-  async follow(follower: User, following: User) {
+  async follow(follower: User, following: User): Promise<void> {
     const isSameUser = following.id === follower.id;
 
     if (isSameUser) {
@@ -40,7 +40,7 @@ export class FollowService {
   /**
    * @description 팔로우 관계를 해제
   */
-  async unfollow(follower: User, following: User) {
+  async unfollow(follower: User, following: User): Promise<void> {
     const result = await this.followRepository.delete({
       follower: { id: follower.id },
       following: { id: following.id },
@@ -54,7 +54,7 @@ export class FollowService {
   /**
    * @description 유저의 팔로워 목록을 가져옵니다.
   */
-  async getFollowers(userId: number) {
+  async getFollowers(userId: number): Promise<User[]> {
     const result = await this.followRepository
       .createQueryBuilder('follow')
       .leftJoin('follow.follower', 'follower')
@@ -71,7 +71,7 @@ export class FollowService {
   /**
    * @description 유저의 팔로잉 목록을 가져옵니다.
   */
-  async getFollowings(userId: number) {
+  async getFollowings(userId: number): Promise<User[]> {
     const result = await this.followRepository
       .createQueryBuilder('follow')
       .leftJoin('follow.follower', 'follower')
