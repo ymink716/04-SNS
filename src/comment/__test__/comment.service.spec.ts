@@ -1,7 +1,6 @@
 import { HttpException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import e from 'express';
 import { ErrorType } from 'src/common/exception/error-type.enum';
 import { Post } from 'src/post/entity/post.entity';
 import { PostService } from 'src/post/post.service';
@@ -30,7 +29,21 @@ describe('CommentService', () => {
   let commentService: CommentService;
   let postService: PostService;
   let commentRepository: MockRepository<Comment>;
-  
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        CommentService, 
+        { provide: PostService, useValue: mockPostService },
+        { provide: getRepositoryToken(Comment), useValue: mockCommentRepository },
+      ],
+    }).compile();
+
+    commentService = module.get<CommentService>(CommentService);
+    postService = module.get<PostService>(PostService);
+    commentRepository = module.get(getRepositoryToken(Comment));
+  });
+
   const user = new User();
   user.id = 1;
   user.email = 'tester@mail.com',
@@ -52,20 +65,6 @@ describe('CommentService', () => {
   const diffUser = new User();
   diffUser.id = 2;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        CommentService, 
-        { provide: PostService, useValue: mockPostService },
-        { provide: getRepositoryToken(Comment), useValue: mockCommentRepository },
-      ],
-    }).compile();
-
-    commentService = module.get<CommentService>(CommentService);
-    postService = module.get<PostService>(PostService);
-    commentRepository = module.get(getRepositoryToken(Comment));
-  });
-
   describe('createComment', () => {
     const createCommentDto: CreateCommentDto = {
       content: '좋은 게시물이네요 좋아요',
@@ -80,6 +79,7 @@ describe('CommentService', () => {
     it('댓글을 생성하고 생성한 댓글을 반환합니다.', async () => {
       jest.spyOn(postService, 'getPostById').mockResolvedValue(post);
       mockCommentRepository.create.mockResolvedValue(comment);
+      mockCommentRepository.save.mockResolvedValue(comment);
 
       const result = await commentService.createComment(createCommentDto, user);
       expect(result).toEqual(comment);

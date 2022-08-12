@@ -24,12 +24,8 @@ export class LikeService {
 
     this.checkIsAuthor(post, user);
 
-    try {
-      const like = this.likeRepository.create({ user, post });
-      await this.likeRepository.save(like);
-    } catch (error) {
-      throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
-    }
+    const like = this.likeRepository.create({ user, post });
+    await this.likeRepository.save(like);
   }
 
   /**
@@ -40,17 +36,12 @@ export class LikeService {
 
     this.checkIsAuthor(post, user);
 
-    try {
-      await this.likeRepository
-        .createQueryBuilder('like')
-        .delete()
-        .where('postId = :postId', { postId })
-        .andWhere('userId = :userId', { userId: user.id })
-        .execute();
-      
-    } catch (error) {
-      throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
-    }
+    await this.likeRepository
+      .createQueryBuilder('like')
+      .delete()
+      .where('postId = :postId', { postId })
+      .andWhere('userId = :userId', { userId: user.id })
+      .execute();
   }
 
   /**
