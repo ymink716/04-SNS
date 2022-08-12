@@ -89,8 +89,8 @@ export class UserService {
   /**
    * @description 로그아웃 시 Refresh Token 값을 null로 바꿈
   */
-  async removeRefreshToken(id: number) {
-    return await this.userRepository.update(id, {
+  async removeRefreshToken(id: number): Promise<void> {
+    await this.userRepository.update(id, {
       hashedRefreshToken: null,
     });
   }

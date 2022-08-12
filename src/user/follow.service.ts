@@ -32,14 +32,9 @@ export class FollowService {
       throw new HttpException(ErrorType.alreadyFollowed.message, ErrorType.alreadyFollowed.code);
     }
 
-    try {
-      const follow: Follow = await this.followRepository.create({ follower, following });
+    const follow: Follow = await this.followRepository.create({ follower, following });
       
-      await this.followRepository.save(follow);
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
-    }
+    await this.followRepository.save(follow);
   }
 
   /**

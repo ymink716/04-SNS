@@ -62,7 +62,7 @@ export class AuthController {
     res.cookie('Refresh', refreshToken, refreshOption);
     
     return AuthResponse.response(
-      ResponseType.registerUser.code,
+      ResponseType.loginUser.code,
       ResponseType.loginUser.message,
       { user: user.toJSON(), accessToken },
     );
@@ -85,7 +85,7 @@ export class AuthController {
     res.cookie('Refresh', '', refreshOption);
 
     return AuthResponse.response(
-      ResponseType.loginUser.code,
+      ResponseType.logoutUser.code,
       ResponseType.logoutUser.message,
     );
   }

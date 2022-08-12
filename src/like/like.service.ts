@@ -19,7 +19,7 @@ export class LikeService {
   /**
    * @description 해당 게시물에 좋아요를 추가하는 비지니스 로직
   */
-  async uplike(user: User, postId: number) {
+  async uplike(user: User, postId: number): Promise<void> {
     const post: Post = await this.postService.getPostById(postId);
 
     this.checkIsAuthor(post, user);
@@ -31,7 +31,7 @@ export class LikeService {
   /**
    * @description 해당 게시물에 좋아요를 취소하는 비지니스 로직
   */
-  async unlike(user: User, postId: number) {
+  async unlike(user: User, postId: number): Promise<void> {
     const post: Post = await this.postService.getPostById(postId);
 
     this.checkIsAuthor(post, user);
@@ -47,7 +47,7 @@ export class LikeService {
   /**
    * @description 본인의 게시물에는 좋아요를 누를 수 없도록 함
   */
-  checkIsAuthor(post: Post, user: User) {
+  checkIsAuthor(post: Post, user: User): void {
     const isAuthor = post.user.id === user.id;
 
     if (isAuthor) {
