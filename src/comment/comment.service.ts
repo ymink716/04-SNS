@@ -17,22 +17,17 @@ export class CommentService {
     private readonly postService: PostService,
   ) {}
 
-  async createComment(createCommentDto: CreateCommentDto, user: User) {
+  async createComment(createCommentDto: CreateCommentDto, user: User): Promise<Comment> {
     const { content, postId } = createCommentDto;
 
     const post: Post = await this.postService.getPostById(postId);
-    
-    try {
-      const comment: Comment = this.commentRepository.create({ content, user, post });
-      const newComment: Comment = await this.commentRepository.save(comment);
+    const comment: Comment = this.commentRepository.create({ content, user, post });
+    await this.commentRepository.save(comment);
 
-      return newComment;
-    } catch (error) {
-      throw new HttpException(ErrorType.databaseServerError.message, ErrorType.databaseServerError.code);
-    }
+    return comment;
   }
 
-  async updateComment(commentId: number, updateCommentDto: UpdateCommentDto, user: User) {
+  async updateComment(commentId: number, updateCommentDto: UpdateCommentDto, user: User): Promise<Comment> {
     const { content } = updateCommentDto;
     const comment: Comment = await this.getCommentById(commentId);
 
@@ -44,13 +39,11 @@ export class CommentService {
     return updatedComment;
   }
 
-  async deleteComment(commentId: number, user: User) {
+  async deleteComment(commentId: number, user: User): Promise<void> {
     const comment = await this.getCommentById(commentId);
     this.checkIsAuthor(comment, user);
 
-    const result = await this.commentRepository.delete({ id: commentId });
-    
-    return result;
+    await this.commentRepository.delete({ id: commentId });
   }
 
   async getCommentById(commentId: number): Promise<Comment> {
@@ -60,13 +53,13 @@ export class CommentService {
     });
 
     if (!comment) {
-      throw new HttpException(ErrorType.commnetNotFound.message, ErrorType.commnetNotFound.code);
+      throw new HttpException(ErrorType.commentNotFound.message, ErrorType.commentNotFound.code);
     }
 
     return comment;
   }
 
-  /**
+  /** 
    * @description 댓글 작성자인지 확인
   */
   checkIsAuthor(comment: Comment, user: User): void {

@@ -23,7 +23,7 @@ export const ErrorType = {
   likeForbidden: { code: 403, message: '자신의 게시물에 좋아요를 할 수 없습니다.' },
 
   // Comment
-  commnetNotFound: { code: 404, message: '해당 댓글을 찾을 수 없습니다.' },
+  commentNotFound: { code: 404, message: '해당 댓글을 찾을 수 없습니다.' },
   commentForbidden: { code: 403, message: '해당 댓글에 접근할 권한이 없습니다.' },
 
   // Server
