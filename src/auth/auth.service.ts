@@ -46,7 +46,7 @@ export class AuthService {
   }
 
   /**
-   * @description 사용자가 존재하는지 비밀번호가 맞는지 확인합니다.
+   * @description acces token과 refresh token을 발급합니다.
   */
   async getTokens(email: string) {
     const { accessToken, accessOption } = await this.getCookieWithAccessToken(email);
