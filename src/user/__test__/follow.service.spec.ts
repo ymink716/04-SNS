@@ -117,7 +117,7 @@ describe('FollowService', () => {
       expect(followRepository.createQueryBuilder().addSelect).toHaveBeenCalledTimes(1);
       expect(followRepository.createQueryBuilder().where).toHaveBeenCalledTimes(1);
       expect(followRepository.createQueryBuilder().getMany).toHaveBeenCalledTimes(1);
-      expect(result).toEqual([]);
+      expect(result).toBeInstanceOf(Array);
     });
   });
 
@@ -128,15 +128,13 @@ describe('FollowService', () => {
       jest.spyOn(followRepository.createQueryBuilder(), 'where');
       jest.spyOn(followRepository.createQueryBuilder(), 'getMany').mockResolvedValue([follow]);
 
-      const result = await service.getFollowers(userId);
+      const result = await service.getFollowings(userId);
 
-      expect(followRepository.createQueryBuilder().leftJoin).toHaveBeenCalledTimes(2);
-      expect(followRepository.createQueryBuilder().addSelect).toHaveBeenCalledTimes(1);
-      expect(followRepository.createQueryBuilder().where).toHaveBeenCalledTimes(1);
-      expect(followRepository.createQueryBuilder().getMany).toHaveBeenCalledTimes(1);
+      expect(followRepository.createQueryBuilder().leftJoin).toHaveBeenCalled();
+      expect(followRepository.createQueryBuilder().addSelect).toHaveBeenCalled();
+      expect(followRepository.createQueryBuilder().where).toHaveBeenCalled();
+      expect(followRepository.createQueryBuilder().getMany).toHaveBeenCalled();
       expect(result).toBeInstanceOf(Array);
-      expect(result[0].email).toEqual('yongmin@mail.com');
-      expect(result[0].nickname).toEqual('yongmin');
     });
   });
 });

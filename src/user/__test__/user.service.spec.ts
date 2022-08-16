@@ -80,9 +80,9 @@ describe('UserService', () => {
       
       const result = await service.getUserByEmail(email);
 
-      expect(userRepository.createQueryBuilder().leftJoinAndSelect).toHaveBeenCalledTimes(1);
-      expect(userRepository.createQueryBuilder().where).toHaveBeenCalledTimes(1);
-      expect(userRepository.createQueryBuilder().getOne).toHaveBeenCalledTimes(1);
+      expect(userRepository.createQueryBuilder().leftJoinAndSelect).toHaveBeenCalled();
+      expect(userRepository.createQueryBuilder().where).toHaveBeenCalled();
+      expect(userRepository.createQueryBuilder().getOne).toHaveBeenCalled();
       expect(result).toEqual(user);
     });
   });
@@ -121,9 +121,6 @@ describe('UserService', () => {
 
       const result = await service.setRefreshToken(refreshToken, email);
 
-      expect(userRepository.createQueryBuilder().update).toHaveBeenCalledTimes(1);
-      expect(userRepository.createQueryBuilder().set).toHaveBeenCalledTimes(1);
-      expect(userRepository.createQueryBuilder().where).toHaveBeenCalledTimes(1);
       expect(result).toBeUndefined();
     });
   });

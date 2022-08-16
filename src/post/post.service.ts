@@ -137,12 +137,8 @@ export class PostService {
       throw new HttpException(ErrorType.postNotDeleted.message, ErrorType.postNotDeleted.code);
     }
 
-    try {
-      post.deletedAt = null;
-      await this.postRepository.save(post);
-    } catch (error) {
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
-    }
+    post.deletedAt = null;
+    await this.postRepository.save(post);
   }
 
   /**
@@ -167,15 +163,11 @@ export class PostService {
     
     if (isVisited) {
       return post;
-    }
-
-    try {
+    } else {
       post.views = post.views + 1;
       const updatedPost = await this.postRepository.save(post);
       
       return updatedPost;
-    } catch (error) {
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
     }
   }
 
@@ -195,27 +187,25 @@ export class PostService {
     page = page || 1;
     take = take || 10;
 
-    try {
-      const qb = await this.postRepository
-      .createQueryBuilder('post')
-      .select([
-        'post.id',
-        'post.title',
-        'post.content',
-        'post.hashtagsText',
-        'post.views',
-        'post.createdAt',
-        'post.updatedAt',
-      ])
-      .leftJoin('post.user', 'author')
-      .addSelect([
-        'author.id',
-        'author.email',
-        'author.nickname',
-      ])
-      .loadRelationCountAndMap('post.likes', 'post.likes')
-      .loadRelationCountAndMap('post.comments', 'post.comments');
-
+    const qb = await this.postRepository
+    .createQueryBuilder('post')
+    .select([
+      'post.id',
+      'post.title',
+      'post.content',
+      'post.hashtagsText',
+      'post.views',
+      'post.createdAt',
+      'post.updatedAt',
+    ])
+    .leftJoin('post.user', 'author')
+    .addSelect([
+      'author.id',
+      'author.email',
+      'author.nickname',
+    ])
+    .loadRelationCountAndMap('post.likes', 'post.likes')
+    .loadRelationCountAndMap('post.comments', 'post.comments');
 
     if (search) {
       qb.andWhere('post.title like :title', { title: `%${search}%` })
@@ -226,7 +216,7 @@ export class PostService {
       const regexp = /[^#,]+/g;  // # , 제외하고 검색
       const matchedArray = [ ...filter.matchAll(regexp) ]
       const tags = matchedArray.map(e => e[0]);
-      console.log(tags);
+      
       qb.leftJoin('post.postHashtags', 'postHashtags')
         .leftJoin('postHashtags.hashtag', 'hashtag')
         .andWhere('hashtag.content IN (:...tags)', { tags });
@@ -238,9 +228,6 @@ export class PostService {
       .getMany();
 
     return posts;
-    } catch (error) {
-      throw new HttpException(ErrorType.serverError.message, ErrorType.serverError.code);
-    }
   }
 
   async getPostById(id: number): Promise<Post> {
@@ -254,17 +241,5 @@ export class PostService {
     }
 
     return post;
-  }
-
-  /**
-   * @description 텍스트 형태의 해시태그를 분할합니다.
-   * - #서울,#맛집 => ['서울', '맛집']
-  */
-  splitHashtags(hashtags: string): string[] {
-    const regexp = /[^#,]+/g;  // # , 제외하고 검색
-    const matchedArray = [ ...hashtags.matchAll(regexp) ]
-    const tags = matchedArray.map(e => e[0]);
-  
-    return tags;
   }
 }
