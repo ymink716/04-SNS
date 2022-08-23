@@ -23,13 +23,12 @@ services:
     restart: "unless-stopped"
 
   database-server:
-    # platform: linux/x86_64 # 윈도우 환경에 설치된 도커를 쓰신다면 이부분을 제외해주세요!
     image: mysql:5.7
     restart: always
     environment:
       MYSQL_DATABASE: 'sns'
       MYSQL_ROOT_PASSWORD: '2222'
-      MYSQL_TCP_PORT: 3306
+      MYSQL_TCP_PORT: 3309
       TZ: 'Asia/Seoul'
     command:
       [
@@ -40,4 +39,4 @@ services:
         '--default-authentication-plugin=mysql_native_password',
       ]
     ports:
-      - 3306:3306
+      - 3309:3309
