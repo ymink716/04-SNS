@@ -29,7 +29,7 @@ services:
     environment:
       MYSQL_DATABASE: 'sns'
       MYSQL_ROOT_PASSWORD: '2222'
-      MYSQL_TCP_PORT: 3309
+      MYSQL_TCP_PORT: 3306
       TZ: 'Asia/Seoul'
     command:
       [
@@ -40,4 +40,4 @@ services:
         '--default-authentication-plugin=mysql_native_password',
       ]
     ports:
-      - 3309:3309
+      - 3306:3306

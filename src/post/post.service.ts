@@ -176,7 +176,7 @@ export class PostService {
    * - 정렬조건, 차순, 페이지, 개수가 없으면 기본값으로 설정
    * - 검색어(search)가 존재한다면 제목과 내용에서 찾음
    * - 해시태그필터링(filter)가 존재한다면 tag를 추출한 후 해시태그 테이블과 조인하여 검색
-   * - 정렬(sort, orderBy), 페이징(page, take)처리하여 리턴  
+   * - 정렬(sort, order), 페이징(page, take)처리하여 리턴  
   */
   async getList(getPostsDto: GetPostsDto) {
     const { search, filter } = getPostsDto;

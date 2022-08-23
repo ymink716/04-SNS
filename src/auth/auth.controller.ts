@@ -30,7 +30,7 @@ export class AuthController {
     description: ResponseType.registerUser.message, 
     type: RegisterResponseData 
   })
-  @Post('/user/register')
+  @Post('/register')
   async register(@Body() createUserDto: CreateUserDto) {
     const user = await this.authService.register(createUserDto);
 
@@ -100,7 +100,7 @@ export class AuthController {
     summary: 'refresh token 확인' 
   })
   @ApiResponse({ description: ResponseType.refreshTokenWithUser.message })
-  @Get('/refreshToken')
+  @Get('/accessToken')
   async refreshToken(@GetUser() user: User, @Res({ passthrough: true }) res: Response) {
     const { accessToken } = await this.authService.getCookieWithAccessToken(user.email);
     const accessOption = defaultTokenOption;
